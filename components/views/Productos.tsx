@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
 import { AuthContext } from '../../src/AuthContext';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
 
 interface Producto {
@@ -29,27 +29,31 @@ const Productos = () => {
     const [productos, setProductos] = useState<Producto[]>([]);
     const [search, setSearch] = useState('');
 
-    useEffect(() => {
-        const fetchProductos = async () => {
-            try {
-                const response = await axios.get(`${API_URL}/productos`);
-                // Filtrar los datos para eliminar `created_at` y `updated_at`
-                const productosLimpios = response.data.map((producto: { created_at: string; updated_at: string; [key: string]: any }) => {
-                    const { created_at, updated_at, ...resto } = producto;
-                    return resto;
-                });
-                setProductos(productosLimpios);
-            } catch (error) {
-                console.error('Error al obtener productos:', error);
-            }
-        };
-
-        fetchProductos();
+    const fetchProductos = useCallback(async () => {
+        try {
+            const response = await axios.get(`${API_URL}/productos`);
+            const productosLimpios = response.data.map((producto: { created_at: string; updated_at: string; [key: string]: any }) => {
+                const { created_at, updated_at, ...resto } = producto;
+                return resto;
+            });
+            setProductos(productosLimpios);
+            console.log('✅ Productos actualizados');
+        } catch (error) {
+            console.error('❌ Error al obtener productos:', error);
+        }
     }, []);
 
-    const filteredProductos = productos.filter((producto) =>
-        producto.nombre.toLowerCase().includes(search.toLowerCase())
+    // Se ejecuta cuando se entra a la pantalla
+    useFocusEffect(
+        useCallback(() => {
+            fetchProductos();
+        }, [fetchProductos])
     );
+
+    // Filtrar productos cuando cambia la búsqueda
+    useEffect(() => {
+        fetchProductos();
+    }, [search]);
 
     return (
         <View style={styles.container}>
@@ -70,12 +74,14 @@ const Productos = () => {
 
             {/* Lista de productos */}
             <FlatList
-                data={filteredProductos}
+                data={productos.filter((producto) =>
+                    producto.nombre.toLowerCase().includes(search.toLowerCase())
+                )}
                 keyExtractor={(item) => item.id_producto.toString()}
                 renderItem={({ item }) => (
                     <View style={styles.card}>
                         <Image
-                            source={{ uri: `https://0af2-2800-200-ff30-256e-90c4-3c46-934b-d68e.ngrok-free.app/storage/${item.imagen}` }}
+                            source={{ uri: `https://b193-2800-200-ff30-256e-5828-c385-56e2-3350.ngrok-free.app/storage/${item.imagen}` }}
                             style={styles.productImage}
                             resizeMode="cover"
                         />
