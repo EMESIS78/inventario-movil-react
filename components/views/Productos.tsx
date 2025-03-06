@@ -6,6 +6,7 @@ import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
+import CrearProductos from '../actions/CrearProducto';
 
 interface Producto {
     id_producto: number;
@@ -20,6 +21,7 @@ interface Producto {
 const Productos = () => {
     const auth = useContext(AuthContext);
     const navigation = useNavigation<DrawerNavProp>(); // Agregamos el hook para manejar la navegación
+    const [modalVisible, setModalVisible] = useState(false);
 
     if (!auth) {
         return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
@@ -78,23 +80,28 @@ const Productos = () => {
                     producto.nombre.toLowerCase().includes(search.toLowerCase())
                 )}
                 keyExtractor={(item) => item.id_producto.toString()}
-                renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <Image
-                            source={{ uri: `https://b193-2800-200-ff30-256e-5828-c385-56e2-3350.ngrok-free.app/storage/${item.imagen}` }}
-                            style={styles.productImage}
-                            resizeMode="cover"
-                        />
-                        <Text style={styles.productName}>{item.nombre}</Text>
-                        <Text style={styles.productDescription}>{item.marca}</Text>
-                        <Text style={styles.productPrice}>Unidad: {item.unidad_medida}</Text>
-                    </View>
-                )}
+                renderItem={({ item }) => {
+                    return (
+                        <View style={styles.card}>
+                            <Image
+                                source={{ uri: `http://192.168.0.86:3000/uploads/${item.imagen}`}}
+                                style={styles.productImage}
+                                resizeMode="cover"
+                            />
+                            <Text style={styles.productName}>{item.nombre}</Text>
+                            <Text style={styles.productDescription}>{item.marca}</Text>
+                            <Text style={styles.productPrice}>Unidad: {item.unidad_medida}</Text>
+                        </View>
+                    );
+                }}
             />
 
-            {/* Botón flotante para agregar productos (solo admin/supervisor) */}
+            {/* Modal para Crear Producto */}
+            <CrearProductos visible={modalVisible} onClose={() => setModalVisible(false)} onProductAdded={fetchProductos} />
+
+            {/* Botón flotante para agregar productos */}
             {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
-                <TouchableOpacity style={styles.fab} onPress={() => console.log('Agregar producto')}>
+                <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
                     <Text style={styles.fabText}>+</Text>
                 </TouchableOpacity>
             )}
