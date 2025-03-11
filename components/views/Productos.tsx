@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
 import CrearProductos from '../actions/CrearProducto';
+import EditarProducto from '../actions/EditarProductos';
+import EliminarProducto from '../actions/EliminarProducto';
 
 interface Producto {
     id_producto: number;
@@ -30,11 +32,13 @@ const Productos = () => {
     const { user } = auth;
     const [productos, setProductos] = useState<Producto[]>([]);
     const [search, setSearch] = useState('');
+    const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null);
+    const [productoAEliminar, setProductoAEliminar] = useState<Producto | null>(null);
 
     const fetchProductos = useCallback(async () => {
         try {
             const response = await axios.get(`${API_URL}/productos`);
-            const productosLimpios = response.data.map((producto: { created_at: string; updated_at: string; [key: string]: any }) => {
+            const productosLimpios = response.data.map((producto: { created_at: string; updated_at: string;[key: string]: any }) => {
                 const { created_at, updated_at, ...resto } = producto;
                 return resto;
             });
@@ -84,17 +88,46 @@ const Productos = () => {
                     return (
                         <View style={styles.card}>
                             <Image
-                                source={{ uri: `http://192.168.0.86:3000/uploads/${item.imagen}`}}
+                                source={{ uri: `http://192.168.0.86:3000/uploads/${item.imagen}` }}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />
-                            <Text style={styles.productName}>{item.nombre}</Text>
-                            <Text style={styles.productDescription}>{item.marca}</Text>
-                            <Text style={styles.productPrice}>Unidad: {item.unidad_medida}</Text>
+                            <View style={styles.productInfo}>
+                                <Text style={styles.productName}>{item.nombre}</Text>
+                                <Text style={styles.productDescription}>{item.marca}</Text>
+                                <Text style={styles.productPrice}>Unidad: {item.unidad_medida}</Text>
+                            </View>
+
+                            <View style={styles.buttonContainer}>
+                            {/* Botón de Editar */}
+                            <TouchableOpacity
+                                style={styles.editButton}
+                                onPress={() => setProductoSeleccionado(item)}
+                            >
+                                <Ionicons name="create-outline" size={24} color="white" />
+                            </TouchableOpacity>
+                            {/* Botón de Eliminar */}
+                            <TouchableOpacity
+                                style={styles.deleteButton}
+                                onPress={() => setProductoAEliminar(item)}
+                            >
+                                <Ionicons name="trash-outline" size={24} color="white" />
+                            </TouchableOpacity>
+                            </View>
                         </View>
                     );
                 }}
             />
+
+            {/* Modal de edición */}
+            {productoSeleccionado && (
+                <EditarProducto
+                    visible={!!productoSeleccionado}
+                    producto={productoSeleccionado}
+                    onClose={() => setProductoSeleccionado(null)}
+                    onProductUpdated={fetchProductos}
+                />
+            )}
 
             {/* Modal para Crear Producto */}
             <CrearProductos visible={modalVisible} onClose={() => setModalVisible(false)} onProductAdded={fetchProductos} />
@@ -104,6 +137,16 @@ const Productos = () => {
                 <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
                     <Text style={styles.fabText}>+</Text>
                 </TouchableOpacity>
+            )}
+
+            {/* Modal de eliminación */}
+            {productoAEliminar && (
+                <EliminarProducto
+                    visible={!!productoAEliminar}
+                    producto={productoAEliminar}
+                    onClose={() => setProductoAEliminar(null)}
+                    onProductDeleted={fetchProductos}
+                />
             )}
         </View>
     );
@@ -187,5 +230,26 @@ const styles = StyleSheet.create({
         height: 150,
         borderRadius: 8,
         marginBottom: 10,
+    },
+    editButton: {
+        backgroundColor: '#007AFF',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginRight: 5,
+    },
+    productInfo: {
+        flex: 1
+    },
+    deleteButton: {
+        backgroundColor: '#DC3545',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
     },
 });

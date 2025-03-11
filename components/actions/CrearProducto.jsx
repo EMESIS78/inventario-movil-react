@@ -17,6 +17,7 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
     const [imagen, setImagen] = useState(null);
     const [dropdownVisible, setDropdownVisible] = useState(false);
     const [alertVisible, setAlertVisible] = useState(false);
+    const [alertTitle, setAlertTitle] = useState(''); // Título de la alerta
     const [alertMessage, setAlertMessage] = useState('');
 
     // 📸 Seleccionar imagen de la galería
@@ -32,10 +33,21 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
         }
     };
 
+    const showCustomAlert = (title, message) => {
+        setAlertTitle(title);
+        setAlertMessage(message);
+        setAlertVisible(true); // Muestra la alerta
+    };
+
+    const closeAlert = () => {
+        setAlertVisible(false); // Ocultar alerta
+        onClose();
+    };
+
     // 📤 Enviar datos al backend
     const handleCreateProduct = async () => {
         if (!codigo || !nombre || !marca || !unidad || !ubicacion) {
-            setAlertMessage('Todos los campos son obligatorios');
+            showCustomAlert("Error", 'Todos los campos son obligatorios');
             setAlertVisible(true);
             return;
         }
@@ -64,17 +76,11 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
-            setAlertMessage('Producto creado correctamente');
-            setAlertVisible(true);
-            // ⏳ Esperar un poco antes de cerrar el modal
-            setTimeout(() => {
-                onProductAdded(); // Recargar la lista de productos
-                onClose(); // Cerrar modal
-            }, 1500); // 1.5 segundos para que el usuario vea la alerta
+            showCustomAlert("Éxito", 'Producto creado correctamente');
+            onProductAdded()
         } catch (error) {
             console.error('❌ Error al crear producto:', error);
-            setAlertMessage('No se pudo crear el producto');
-            setAlertVisible(true);
+            showCustomAlert("Error", 'No se pudo crear el producto');
         }
     };
 
@@ -147,7 +153,11 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
                 </View>
             </View>
             {/* Alerta personalizada */}
-            <Alert visible={alertVisible} message={alertMessage} onClose={() => setAlertVisible(false)} />
+            <Alert
+                visible={alertVisible}
+                title={alertTitle}
+                message={alertMessage}
+                onClose={closeAlert} />
         </Modal>
     );
 };
