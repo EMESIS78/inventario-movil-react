@@ -6,6 +6,8 @@ import LoadingApp from './views/LoadingApp';
 import LoginScreen from './views/LoginScreen';
 import HomeScreen from './views/HomeScreen';
 import Productos from '../components/views/Productos';
+import Almacenes from '../components/views/Almacenes';
+import Usuarios from '../components/views/Usuarios';
 
 
 const Stack = createStackNavigator();
@@ -16,6 +18,9 @@ const DrawerNavigator = () => {
     <Drawer.Navigator screenOptions={{ headerShown: false }}>
       <Drawer.Screen name="Home" component={HomeScreen} />
       <Drawer.Screen name="Productos" component={Productos} />
+      <Drawer.Screen name="Almacenes" component={Almacenes} />
+      <Drawer.Screen name="Usuarios" component={Usuarios} />
+
       {/* Agrega más pantallas aquí */}
     </Drawer.Navigator>
   );

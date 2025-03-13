@@ -4,12 +4,17 @@ import { StackNavigationProp } from '@react-navigation/stack';
 export type RootStackParamList = {
   Home: undefined;
   Productos: undefined;
+  Almacenes: undefined;
+  Usuarios: undefined;
+
   // Agrega más pantallas si es necesario
 };
 
 export type RootDrawerParamList = {
   Home: undefined;
   Productos: undefined;
+  Almacenes: undefined;
+  Usuarios: undefined;
   // Agrega más opciones del Drawer
 };
 
