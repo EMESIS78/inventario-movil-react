@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
+import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { AuthProvider, AuthContext } from '../src/AuthContext';
 import LoadingApp from './views/LoadingApp';
@@ -58,14 +59,14 @@ const AppNavigator = () => {
   );
 };
 
-const index = () => {
+const App = () => {
   return (
     <AuthProvider>
-
+    <NavigationContainer>
       <AppNavigator />
-      
+      </NavigationContainer>
     </AuthProvider>
   );
 };
 
-export default index;
+export default App;
