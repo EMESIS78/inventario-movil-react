@@ -9,23 +9,31 @@ import HomeScreen from './views/HomeScreen';
 import Productos from '../components/views/Productos';
 import Almacenes from '../components/views/Almacenes';
 import Usuarios from '../components/views/Usuarios';
+import Inventario from '../components/views/Inventario';
+import { View, useWindowDimensions, StyleSheet } from 'react-native';
 
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
 const DrawerNavigator = () => {
+  const { width } = useWindowDimensions();
+  const isLandscape = width > 600; // Considera landscape si el ancho es mayor a 600px
   return (
-    <Drawer.Navigator screenOptions={{ headerShown: false }}>
-      <Drawer.Screen name="Home" component={HomeScreen} />
-      <Drawer.Screen name="Productos" component={Productos} />
-      <Drawer.Screen name="Almacenes" component={Almacenes} />
-      <Drawer.Screen name="Usuarios" component={Usuarios} />
+    <View style={[styles.container, isLandscape && styles.containerLandscape]}>
 
-      {/* Agrega más pantallas aquí */}
-    </Drawer.Navigator>
+      <Drawer.Navigator screenOptions={{ headerShown: false }}>
+        <Drawer.Screen name="Home" component={HomeScreen} />
+        <Drawer.Screen name="Productos" component={Productos} />
+        <Drawer.Screen name="Almacenes" component={Almacenes} />
+        <Drawer.Screen name="Inventario" component={Inventario} />
+        <Drawer.Screen name="Usuarios" component={Usuarios} />
+      </Drawer.Navigator>
+    </View>
+
   );
 };
+
 
 const StackNavigator = () => {
   return (
@@ -62,11 +70,28 @@ const AppNavigator = () => {
 const App = () => {
   return (
     <AuthProvider>
-    <NavigationContainer>
-      <AppNavigator />
+      <NavigationContainer>
+        <AppNavigator />
       </NavigationContainer>
     </AuthProvider>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  containerLandscape: {
+    flexDirection: 'row', // En landscape, los elementos estarán en fila
+  },
+  drawerContainer: {
+    width: 250, // Ancho fijo del Drawer cuando está en landscape
+    backgroundColor: '#f5f5f5',
+  },
+  screenContainer: {
+    flex: 1, // Ocupa todo el espacio restante
+  },
+});
+
 
 export default App;

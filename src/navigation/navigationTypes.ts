@@ -6,6 +6,7 @@ export type RootStackParamList = {
   Productos: undefined;
   Almacenes: undefined;
   Usuarios: undefined;
+  Inventario: undefined;
 
   // Agrega más pantallas si es necesario
 };
@@ -15,6 +16,7 @@ export type RootDrawerParamList = {
   Productos: undefined;
   Almacenes: undefined;
   Usuarios: undefined;
+  Inventario: undefined;
   // Agrega más opciones del Drawer
 };
 

@@ -9,6 +9,7 @@ import { DrawerNavProp } from '@/src/navigation/navigationTypes';
 import CrearProductos from '../actions/CrearProducto';
 import EditarProducto from '../actions/EditarProductos';
 import EliminarProducto from '../actions/EliminarProducto';
+import { useWindowDimensions } from 'react-native'
 
 interface Producto {
     id_producto: number;
@@ -34,6 +35,9 @@ const Productos = () => {
     const [search, setSearch] = useState('');
     const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null);
     const [productoAEliminar, setProductoAEliminar] = useState<Producto | null>(null);
+    const { width, height } = useWindowDimensions(); // Detecta tamaño de pantalla
+    const isLandscape = width > height; // Verifica si está en horizontal
+    const numColumns = isLandscape ? 3 : 1; 
 
     const fetchProductos = useCallback(async () => {
         try {
@@ -80,13 +84,16 @@ const Productos = () => {
 
             {/* Lista de productos */}
             <FlatList
+            key={`flatlist-${numColumns}`}
                 data={productos.filter((producto) =>
                     producto.nombre.toLowerCase().includes(search.toLowerCase())
                 )}
                 keyExtractor={(item) => item.id_producto.toString()}
+                numColumns={numColumns} // 1 columna en vertical, 2 en horizontal
+                contentContainerStyle={{ paddingBottom: 80 }}
                 renderItem={({ item }) => {
                     return (
-                        <View style={styles.card}>
+                        <View style={[styles.card]}>
                             <Image
                                 source={{ uri: `http://192.168.0.86:3000/uploads/${item.imagen}` }}
                                 style={styles.productImage}
@@ -180,6 +187,7 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
     card: {
+        flex: 1,
         backgroundColor: '#fff',
         padding: 16,
         marginBottom: 10,
@@ -191,6 +199,7 @@ const styles = StyleSheet.create({
         elevation: 3,
     },
     productName: {
+        width: '100%',
         fontSize: 18,
         fontWeight: 'bold',
     },

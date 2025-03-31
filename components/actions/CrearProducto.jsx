@@ -5,10 +5,14 @@ import axios from 'axios';
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import Alert from '../customs/Alert';
+import { useWindowDimensions } from 'react-native';
 
 const unidades = ['UNIDAD', 'DOCENA', 'KILO', 'LITRO', 'GRAMOS'];
 
 const CrearProducto = ({ visible, onClose, onProductAdded }) => {
+    const { width, height } = useWindowDimensions();
+    const isLandscape = width > height;
+
     const [codigo, setCodigo] = useState('');
     const [nombre, setNombre] = useState('');
     const [marca, setMarca] = useState('');
@@ -96,9 +100,12 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
     };
 
     return (
-        <Modal visible={visible} transparent animationType="slide">
+        <Modal visible={visible} transparent animationType="fade">
             <View style={styles.overlay}>
-                <View style={styles.modalContainer}>
+                <View style={[
+                    styles.modalContainer,
+                    { width: isLandscape ? '70%' : '90%', maxHeight: isLandscape ? '80%' : '90%' }
+                ]}>
                     <Text style={styles.title}>Crear Producto</Text>
 
                     <TextInput style={styles.input} placeholder="Código" value={codigo} onChangeText={setCodigo} />
@@ -136,7 +143,10 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
                     {imagen && <Image source={{ uri: imagen }} style={styles.imagePreview} />}
 
                     {/* Botones de acción */}
-                    <View style={styles.buttonContainer}>
+                    <View style={[
+                        styles.buttonContainer,
+                        { flexDirection: isLandscape ? 'row' : 'column' }
+                    ]}>
                         <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={handleCancel}>
                             <Text style={styles.buttonText}>Cancelar</Text>
                         </TouchableOpacity>

@@ -1,13 +1,10 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
 import { AuthContext } from '../../src/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
-
-const { width } = Dimensions.get('window');
-const cardSize = width / 2.5; // Ajuste dinámico del tamaño de las tarjetas
-
+import { useWindowDimensions } from 'react-native';
 
 
 const COLORS = {
@@ -35,6 +32,9 @@ const menuItems = [
 const HomeScreen = () => {
   const navigation = useNavigation<DrawerNavProp>();
   const auth = useContext(AuthContext);
+  const { width, height } = useWindowDimensions();
+  const isLandscape = width > height; // Ahora detecta la orientación correctamente
+
 
   if (!auth) {
     return <Text>Error: AuthContext no disponible</Text>;
@@ -42,9 +42,10 @@ const HomeScreen = () => {
 
   const { user, logout } = auth;
   const filteredMenu = menuItems.filter(item => item.roles.includes(user?.rol || ''));
+  const cardSize = isLandscape ? width / 4.5 : width / 2.5;
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, isLandscape && styles.containerLandscape]}>
       {/* Botón para abrir el Drawer
       <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
         <MaterialIcons name="menu" size={28} color={COLORS.primary} />
@@ -53,10 +54,10 @@ const HomeScreen = () => {
       <Text style={styles.title}>Bienvenido, {user?.name || 'Usuario'}</Text>
       <Text style={styles.subtitle}>Rol: {user?.rol || 'Sin rol'}</Text>
 
-      <ScrollView contentContainerStyle={styles.menuContainer}>
+      <ScrollView contentContainerStyle={[styles.menuContainer, isLandscape && styles.menuContainerLandscape,]}>
         {filteredMenu.map((item) => (
-          <Pressable 
-            key={item.route} 
+          <Pressable
+            key={item.route}
             style={[styles.card, { width: cardSize, height: cardSize }]}
             onPress={() => navigation.navigate(item.route as never)}
           >
@@ -87,6 +88,11 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     alignItems: 'center',
   },
+  containerLandscape: {
+    flexDirection: 'column', // Mantiene los elementos en columna
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
   menuButton: {
     position: 'absolute',
     top: 50,
@@ -111,6 +117,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'center',
     paddingBottom: 20,
+  },
+  menuContainerLandscape: {
+    justifyContent: 'space-evenly',
   },
   card: {
     backgroundColor: COLORS.white,
