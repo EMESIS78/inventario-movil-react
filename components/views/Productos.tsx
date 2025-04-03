@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F5F7FA',
-        padding: 16,
+        padding: 20,
     },
     menuButton: {
         position: 'absolute',

@@ -10,8 +10,11 @@ import Productos from '../components/views/Productos';
 import Almacenes from '../components/views/Almacenes';
 import Usuarios from '../components/views/Usuarios';
 import Inventario from '../components/views/Inventario';
+import Salidas from '../components/views/Salidas';
+import Entradas from '../components/views/Entradas';
+import Traslados from '../components/views/Traslados';
 import { View, useWindowDimensions, StyleSheet } from 'react-native';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -20,17 +23,18 @@ const DrawerNavigator = () => {
   const { width } = useWindowDimensions();
   const isLandscape = width > 600; // Considera landscape si el ancho es mayor a 600px
   return (
-    <View style={[styles.container, isLandscape && styles.containerLandscape]}>
-
+    <SafeAreaView  style={[styles.container, isLandscape && styles.containerLandscape]}>
       <Drawer.Navigator screenOptions={{ headerShown: false }}>
         <Drawer.Screen name="Home" component={HomeScreen} />
         <Drawer.Screen name="Productos" component={Productos} />
         <Drawer.Screen name="Almacenes" component={Almacenes} />
         <Drawer.Screen name="Inventario" component={Inventario} />
+        <Drawer.Screen name="Salidas" component={Salidas} />
+        <Drawer.Screen name="Entradas" component={Entradas} />
+        <Drawer.Screen name="Traslados" component={Traslados} />
         <Drawer.Screen name="Usuarios" component={Usuarios} />
       </Drawer.Navigator>
-    </View>
-
+    </SafeAreaView>
   );
 };
 
