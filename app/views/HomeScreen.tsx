@@ -6,7 +6,6 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
 import { useWindowDimensions } from 'react-native';
 
-
 const COLORS = {
   background: '#F4F6F9',
   primary: '#003366', // Azul corporativo oscuro
@@ -20,11 +19,8 @@ const COLORS = {
 
 const menuItems = [
   { name: 'Productos', icon: 'store', roles: ['admin', 'supervisor', 'usuario'], route: 'Productos' },
-  { name: 'Almacenes', icon: 'warehouse', roles: ['admin', 'supervisor', 'usuario'], route: 'Almacenes' },
+  { name: 'Establecimientos', icon: 'warehouse', roles: ['admin', 'supervisor', 'usuario'], route: 'Almacenes' },
   { name: 'Inventario', icon: 'inventory', roles: ['admin', 'supervisor', 'usuario'], route: 'Inventario' },
-  { name: 'Entrada de Mercadería', icon: 'login', roles: ['admin', 'usuario'], route: 'Entradas' },
-  { name: 'Salida de Mercadería', icon: 'logout', roles: ['admin', 'usuario'], route: 'Salidas' },
-  { name: 'Traslado de Mercadería', icon: 'local-shipping', roles: ['admin', 'usuario'], route: 'Traslados' },
   { name: 'Usuarios', icon: 'people', roles: ['admin'], route: 'Usuarios' },
   { name: 'Proveedores', icon: 'business', roles: ['admin'], route: 'Proveedores' },
 ];

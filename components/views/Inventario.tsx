@@ -6,7 +6,6 @@ import axios from 'axios';
 import { API_URL } from '@env';
 import Dropdown from '../customs/Dropdown'
 
-
 interface Producto {
     id_producto: number;
     nombre: string;
@@ -43,7 +42,6 @@ const Inventario = ({ navigation }: any) => {
         }
     }, []);
 
-     // Obtener inventario del almacén seleccionado
     const fetchInventario = useCallback(async () => {
         if (!selectedAlmacen) return;
         setLoading(true);
@@ -77,14 +75,13 @@ const Inventario = ({ navigation }: any) => {
     }
 
     return (
-        <View style={[styles.container, isLandscape && styles.containerLandscape]}>
-            <Text style={styles.title}>Inventario</Text>
+        <View style={[styles.container, { paddingHorizontal: isLandscape ? 40 : 20 }]}>
+            <Text style={[styles.title, { fontSize: isLandscape ? 28 : 24 }]}>Inventario</Text>
 
-            {/* Dropdown personalizado */}
-            <Dropdown 
-                data={almacenes} 
-                selectedValue={selectedAlmacen} 
-                onSelect={setSelectedAlmacen} 
+            <Dropdown
+                data={almacenes}
+                selectedValue={selectedAlmacen}
+                onSelect={setSelectedAlmacen}
             />
 
             {loading ? (
@@ -96,16 +93,16 @@ const Inventario = ({ navigation }: any) => {
                     data={productos}
                     keyExtractor={(item) => item.id_producto.toString()}
                     renderItem={({ item }) => (
-                        <View style={styles.card}>
+                        <View style={[styles.card, isLandscape && styles.cardLandscape]}>
                             <Text style={styles.cardTitle}>{item.nombre}</Text>
                             <Text style={styles.cardStock}>Stock: {item.stock}</Text>
                         </View>
                     )}
+                    contentContainerStyle={{ paddingBottom: 80 }}
                 />
             )}
 
-            {/* Botón Flotante */}
-            <View style={styles.floatingButtonsContainer}>
+            <View style={styles.floatingButtonsContainer} >
                 <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Entradas')}>
                     <Text style={styles.buttonText}>Entradas</Text>
                 </TouchableOpacity>
@@ -197,6 +194,19 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: 'bold',
+    },
+    cardLandscape: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+    
+    floatingButtonsLandscape: {
+        bottom: 10,
+        flexDirection: 'column',
+        alignItems: 'flex-end',
+        right: 10,
+        left: 'auto',
     },
 });
 

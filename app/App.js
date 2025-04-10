@@ -27,7 +27,7 @@ const DrawerNavigator = () => {
       <Drawer.Navigator screenOptions={{ headerShown: false }}>
         <Drawer.Screen name="Home" component={HomeScreen} />
         <Drawer.Screen name="Productos" component={Productos} />
-        <Drawer.Screen name="Almacenes" component={Almacenes} />
+        <Drawer.Screen name="Establecimientos" component={Almacenes} />
         <Drawer.Screen name="Inventario" component={Inventario} />
         <Drawer.Screen name="Salidas" component={Salidas} />
         <Drawer.Screen name="Entradas" component={Entradas} />
