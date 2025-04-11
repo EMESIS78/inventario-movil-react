@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
@@ -66,6 +67,9 @@ const Entradas = ({ navigation }: any) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
+                <Ionicons name="menu" size={28} color="black" />
+            </TouchableOpacity>
       <Text style={styles.title}>Entradas</Text>
 
       {/* Barra de búsqueda */}
@@ -277,4 +281,10 @@ const styles = StyleSheet.create({
     padding: 10,
     fontSize: 14,
   },
+  menuButton: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    zIndex: 10, // Asegura que esté por encima de otros elementos
+},
 });

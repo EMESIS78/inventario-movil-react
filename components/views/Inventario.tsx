@@ -3,6 +3,7 @@ import { View, Text, FlatList, ActivityIndicator, StyleSheet, useWindowDimension
 import { useFocusEffect } from '@react-navigation/native';
 import { AuthContext } from '../../src/AuthContext';
 import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons';
 import { API_URL } from '@env';
 import Dropdown from '../customs/Dropdown'
 
@@ -76,6 +77,9 @@ const Inventario = ({ navigation }: any) => {
 
     return (
         <View style={[styles.container, { paddingHorizontal: isLandscape ? 40 : 20 }]}>
+            <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
+                <Ionicons name="menu" size={28} color="black" />
+            </TouchableOpacity>
             <Text style={[styles.title, { fontSize: isLandscape ? 28 : 24 }]}>Inventario</Text>
 
             <Dropdown
@@ -207,6 +211,12 @@ const styles = StyleSheet.create({
         alignItems: 'flex-end',
         right: 10,
         left: 'auto',
+    },
+    menuButton: {
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        zIndex: 10, // Asegura que esté por encima de otros elementos
     },
 });
 
