@@ -20,6 +20,7 @@ const LoginScreen = () => {
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Por favor ingresa el correo y la contraseña.');
+      console.log('Por favor ingresa el correo y la contraseña.');
       return;
     }
 
@@ -28,6 +29,7 @@ const LoginScreen = () => {
       navigation.replace('Home'); // Redirige a la pantalla principal
     } catch (error) {
       Alert.alert('Error', 'Credenciales incorrectas.');
+      console.log(error);
     }
   };
 

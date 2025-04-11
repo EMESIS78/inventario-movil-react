@@ -95,7 +95,7 @@ const Productos = () => {
                     return (
                         <View style={[styles.card]}>
                             <Image
-                                source={{ uri: `http://192.168.0.86:3000/uploads/${item.imagen}` }}
+                                source={{ uri: `http://192.168.56.1:3000/uploads/${item.imagen}` }}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />

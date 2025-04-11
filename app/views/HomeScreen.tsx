@@ -19,7 +19,7 @@ const COLORS = {
 
 const menuItems = [
   { name: 'Productos', icon: 'store', roles: ['admin', 'supervisor', 'usuario'], route: 'Productos' },
-  { name: 'Establecimientos', icon: 'warehouse', roles: ['admin', 'supervisor', 'usuario'], route: 'Almacenes' },
+  { name: 'Establecimientos', icon: 'warehouse', roles: ['admin', 'supervisor', 'usuario'], route: 'Establecimientos' },
   { name: 'Inventario', icon: 'inventory', roles: ['admin', 'supervisor', 'usuario'], route: 'Inventario' },
   { name: 'Usuarios', icon: 'people', roles: ['admin'], route: 'Usuarios' },
   { name: 'Proveedores', icon: 'business', roles: ['admin'], route: 'Proveedores' },

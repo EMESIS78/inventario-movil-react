@@ -36,6 +36,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         headers: { Authorization: `Bearer ${storedToken}` },
                     });
                     setUser(response.data);
+                }else {
+                    console.log('No hay token almacenado');
+                    setUser(null);
+                    setToken(null);
                 }
             } catch (error) {
                 console.error('Error al recuperar sesión:', error);
