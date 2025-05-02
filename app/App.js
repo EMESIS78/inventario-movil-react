@@ -7,9 +7,9 @@ import LoadingApp from './views/LoadingApp';
 import LoginScreen from './views/LoginScreen';
 import HomeScreen from './views/HomeScreen';
 import Productos from '../components/views/Productos';
+import Platos from '../components/views/Platos';
 import Almacenes from '../components/views/Almacenes';
 import Usuarios from '../components/views/Usuarios';
-import Inventario from '../components/views/Inventario';
 import Salidas from '../components/views/Salidas';
 import Entradas from '../components/views/Entradas';
 import Traslados from '../components/views/Traslados';
@@ -26,9 +26,9 @@ const DrawerNavigator = () => {
     <SafeAreaView  style={[styles.container, isLandscape && styles.containerLandscape]}>
       <Drawer.Navigator screenOptions={{ headerShown: false }}>
         <Drawer.Screen name="Home" component={HomeScreen} />
-        <Drawer.Screen name="Productos" component={Productos} />
+        <Drawer.Screen name="Insumos" component={Productos} />
+        <Drawer.Screen name="Platos" component={Platos} />
         <Drawer.Screen name="Establecimientos" component={Almacenes} />
-        <Drawer.Screen name="Inventario" component={Inventario} />
         <Drawer.Screen name="Salidas" component={Salidas} />
         <Drawer.Screen name="Entradas" component={Entradas} />
         <Drawer.Screen name="Traslados" component={Traslados} />

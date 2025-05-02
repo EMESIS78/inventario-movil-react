@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Animated } from 'react-native';
 import { AuthContext } from '../../src/AuthContext';
 import axios from 'axios';
 import { API_URL } from '@env';
@@ -10,6 +10,7 @@ import CrearProductos from '../actions/CrearProducto';
 import EditarProducto from '../actions/EditarProductos';
 import EliminarProducto from '../actions/EliminarProducto';
 import { useWindowDimensions } from 'react-native'
+import Dropdown from '../customs/Dropdown'
 
 interface Producto {
     id_producto: number;
@@ -18,52 +19,93 @@ interface Producto {
     marca: string;
     unidad_medida: string;
     ubicacion: string;
-    imagen: string;
+    stock: number;
+}
+
+interface Almacen {
+    id: number;
+    nombre: string;
 }
 
 const Productos = () => {
     const auth = useContext(AuthContext);
-    const navigation = useNavigation<DrawerNavProp>(); // Agregamos el hook para manejar la navegación
+    const navigation = useNavigation<DrawerNavProp>();
     const [modalVisible, setModalVisible] = useState(false);
+    const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null);
+    const [productoAEliminar, setProductoAEliminar] = useState<Producto | null>(null);
+    const { width, height } = useWindowDimensions();
+    const isLandscape = width > height;
+    const numColumns = isLandscape ? 3 : 1;
+
+    const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
+    const [selectedAlmacen, setSelectedAlmacen] = useState<Almacen | null>(null);
+    const [productosBase, setProductosBase] = useState<Producto[]>([]);
+    const [productos, setProductos] = useState<Producto[]>([]);
+    const [search, setSearch] = useState('');
+    const [loading, setLoading] = useState(true);
 
     if (!auth) {
         return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
     }
 
-    const { user } = auth;
-    const [productos, setProductos] = useState<Producto[]>([]);
-    const [search, setSearch] = useState('');
-    const [productoSeleccionado, setProductoSeleccionado] = useState<Producto | null>(null);
-    const [productoAEliminar, setProductoAEliminar] = useState<Producto | null>(null);
-    const { width, height } = useWindowDimensions(); // Detecta tamaño de pantalla
-    const isLandscape = width > height; // Verifica si está en horizontal
-    const numColumns = isLandscape ? 3 : 1; 
+    const { user, token } = auth;
 
-    const fetchProductos = useCallback(async () => {
+    const fetchAlmacenes = useCallback(async () => {
         try {
-            const response = await axios.get(`${API_URL}/productos`);
-            const productosLimpios = response.data.map((producto: { created_at: string; updated_at: string;[key: string]: any }) => {
-                const { created_at, updated_at, ...resto } = producto;
-                return resto;
-            });
-            setProductos(productosLimpios);
-            console.log('✅ Productos actualizados');
+            const response = await axios.get(`${API_URL}/almacenes`);
+            setAlmacenes(response.data);
+            if (response.data.length > 0) setSelectedAlmacen(response.data[0]);
         } catch (error) {
-            console.error('❌ Error al obtener productos:', error);
+            console.error('❌ Error al obtener almacenes:', error);
         }
     }, []);
 
-    // Se ejecuta cuando se entra a la pantalla
+    const fetchProductosBase = useCallback(async () => {
+        try {
+            const response = await axios.get(`${API_URL}/productos`);
+            const productosLimpios = response.data.map(({ created_at, updated_at, ...resto }: any) => resto);
+            setProductosBase(productosLimpios);
+            console.log('✅ Productos base cargados');
+        } catch (error) {
+            console.error('❌ Error al obtener productos base:', error);
+        }
+    }, []);
+
+    const fetchInventario = useCallback(async () => {
+        if (!selectedAlmacen) return;
+        setLoading(true);
+        try {
+            const response = await axios.get(`${API_URL}/inventario?id_almacen=${selectedAlmacen.id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const inventario = response.data;
+
+            const productosConStock = inventario.map((item: any) => {
+                const productoBase = productosBase.find(p => p.id_producto === item.id_producto);
+                return productoBase ? { ...productoBase, stock: item.stock } : null;
+            }).filter(Boolean) as Producto[];
+
+            setProductos(productosConStock);
+            console.log('✅ Inventario fusionado');
+        } catch (error) {
+            console.error('❌ Error al obtener inventario:', error);
+        } finally {
+            setLoading(false);
+        }
+    }, [selectedAlmacen, productosBase, token]);
+
     useFocusEffect(
         useCallback(() => {
-            fetchProductos();
-        }, [fetchProductos])
+            fetchAlmacenes();
+            fetchProductosBase();
+        }, [fetchAlmacenes, fetchProductosBase,search])
     );
 
-    // Filtrar productos cuando cambia la búsqueda
     useEffect(() => {
-        fetchProductos();
-    }, [search]);
+        if (productosBase.length > 0 && selectedAlmacen) {
+            fetchInventario();
+        }
+    }, [selectedAlmacen, productosBase]);
 
     return (
         <View style={styles.container}>
@@ -72,7 +114,14 @@ const Productos = () => {
                 <Ionicons name="menu" size={28} color="black" />
             </TouchableOpacity>
 
-            <Text style={styles.title}>Productos</Text>
+            <Text style={styles.title}>Lista de Insumos</Text>
+
+            {/* Dropdown para seleccionar almacén */}
+            <Dropdown
+                data={almacenes}
+                selectedValue={selectedAlmacen}
+                onSelect={setSelectedAlmacen}
+            />
 
             {/* Campo de búsqueda */}
             <TextInput
@@ -83,48 +132,44 @@ const Productos = () => {
             />
 
             {/* Lista de productos */}
-            <FlatList
-            key={`flatlist-${numColumns}`}
-                data={productos.filter((producto) =>
-                    producto.nombre.toLowerCase().includes(search.toLowerCase())
-                )}
-                keyExtractor={(item) => item.id_producto.toString()}
-                numColumns={numColumns} // 1 columna en vertical, 2 en horizontal
-                contentContainerStyle={{ paddingBottom: 80 }}
-                renderItem={({ item }) => {
-                    return (
+            {loading ? (
+                <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
+            ) : (
+                <FlatList
+                    key={`flatlist-${numColumns}`}
+                    data={productos.filter((producto) =>
+                        producto.nombre.toLowerCase().includes(search.toLowerCase())
+                    )}
+                    keyExtractor={(item) => item.id_producto.toString()}
+                    numColumns={numColumns}
+                    contentContainerStyle={{ paddingBottom: 80 }}
+                    renderItem={({ item }) => (
                         <View style={[styles.card]}>
-                            <Image
-                                source={{ uri: `http://192.168.56.1:3000/uploads/${item.imagen}` }}
-                                style={styles.productImage}
-                                resizeMode="cover"
-                            />
                             <View style={styles.productInfo}>
                                 <Text style={styles.productName}>{item.nombre}</Text>
                                 <Text style={styles.productDescription}>{item.marca}</Text>
                                 <Text style={styles.productPrice}>Unidad: {item.unidad_medida}</Text>
+                                <Text style={styles.productStock}>Stock: {item.stock}</Text>
                             </View>
 
                             <View style={styles.buttonContainer}>
-                            {/* Botón de Editar */}
-                            <TouchableOpacity
-                                style={styles.editButton}
-                                onPress={() => setProductoSeleccionado(item)}
-                            >
-                                <Ionicons name="create-outline" size={24} color="white" />
-                            </TouchableOpacity>
-                            {/* Botón de Eliminar */}
-                            <TouchableOpacity
-                                style={styles.deleteButton}
-                                onPress={() => setProductoAEliminar(item)}
-                            >
-                                <Ionicons name="trash-outline" size={24} color="white" />
-                            </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.editButton}
+                                    onPress={() => setProductoSeleccionado(item)}
+                                >
+                                    <Ionicons name="create-outline" size={24} color="white" />
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.deleteButton}
+                                    onPress={() => setProductoAEliminar(item)}
+                                >
+                                    <Ionicons name="trash-outline" size={24} color="white" />
+                                </TouchableOpacity>
                             </View>
                         </View>
-                    );
-                }}
-            />
+                    )}
+                />
+            )}
 
             {/* Modal de edición */}
             {productoSeleccionado && (
@@ -132,12 +177,22 @@ const Productos = () => {
                     visible={!!productoSeleccionado}
                     producto={productoSeleccionado}
                     onClose={() => setProductoSeleccionado(null)}
-                    onProductUpdated={fetchProductos}
+                    onProductUpdated={() => {
+                        fetchProductosBase();
+                        fetchInventario();
+                    }}
                 />
             )}
 
             {/* Modal para Crear Producto */}
-            <CrearProductos visible={modalVisible} onClose={() => setModalVisible(false)} onProductAdded={fetchProductos} />
+            <CrearProductos
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                onProductAdded={() => {
+                    fetchProductosBase();
+                    fetchInventario();
+                }}
+            />
 
             {/* Botón flotante para agregar productos */}
             {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
@@ -152,7 +207,10 @@ const Productos = () => {
                     visible={!!productoAEliminar}
                     producto={productoAEliminar}
                     onClose={() => setProductoAEliminar(null)}
-                    onProductDeleted={fetchProductos}
+                    onProductDeleted={() => {
+                        fetchProductosBase();
+                        fetchInventario();
+                    }}
                 />
             )}
         </View>
@@ -233,12 +291,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 24,
         fontWeight: 'bold',
-    },
-    productImage: {
-        width: '100%',
-        height: 150,
-        borderRadius: 8,
-        marginBottom: 10,
     },
     editButton: {
         backgroundColor: '#007AFF',

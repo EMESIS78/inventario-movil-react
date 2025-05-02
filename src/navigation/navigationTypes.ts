@@ -3,10 +3,10 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 export type RootStackParamList = {
   Home: undefined;
-  Productos: undefined;
+  Insumos: undefined;
+  Platos: undefined;
   Almacenes: undefined;
   Usuarios: undefined;
-  Inventario: undefined;
   Salidas: undefined;
   Entradas: undefined;
   Traslados: undefined;
@@ -16,10 +16,10 @@ export type RootStackParamList = {
 
 export type RootDrawerParamList = {
   Home: undefined;
-  Productos: undefined;
+  Insumos: undefined;
+  Platos: undefined;
   Almacenes: undefined;
   Usuarios: undefined;
-  Inventario: undefined;
   Salidas: undefined;
   Entradas: undefined;
   Traslados: undefined;

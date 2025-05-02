@@ -18,9 +18,13 @@ const COLORS = {
 };
 
 const menuItems = [
-  { name: 'Productos', icon: 'store', roles: ['admin', 'supervisor', 'usuario'], route: 'Productos' },
+  { name: 'Insumos', icon: 'hive', roles: ['admin', 'supervisor', 'usuario'], route: 'Insumos' },
+  { name: 'Platos', icon: 'restaurant', roles: ['admin', 'supervisor', 'usuario'], route: 'Platos' },
+  // { name: 'Almacenes', icon: 'warehouse', roles: ['admin', 'supervisor', 'usuario'], route: 'Almacenes' },
+  { name: 'Entradas', icon: 'arrow-circle-up', roles: ['admin', 'supervisor', 'usuario'], route: 'Entradas' },
+  { name: 'Salidas', icon: 'arrow-circle-down', roles: ['admin', 'supervisor', 'usuario'], route: 'Salidas' },
+  { name: 'Traslados', icon: 'swap-horiz', roles: ['admin', 'supervisor'], route: 'Traslados' },
   { name: 'Establecimientos', icon: 'warehouse', roles: ['admin', 'supervisor', 'usuario'], route: 'Establecimientos' },
-  { name: 'Inventario', icon: 'inventory', roles: ['admin', 'supervisor', 'usuario'], route: 'Inventario' },
   { name: 'Usuarios', icon: 'people', roles: ['admin'], route: 'Usuarios' },
   { name: 'Proveedores', icon: 'business', roles: ['admin'], route: 'Proveedores' },
 ];

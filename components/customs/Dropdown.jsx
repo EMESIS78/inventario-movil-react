@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 const Dropdown = ({ data, selectedValue, onSelect }) => {
     const [visible, setVisible] = useState(false);
+    const [mostrarDropdown, setMostrarDropdown] = useState(false);
 
     const handleSelect = (item) => {
         onSelect(item);

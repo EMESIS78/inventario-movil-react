@@ -140,9 +140,6 @@ const Salidas = ({ navigation }: any) => {
 
             {/* Botón Flotante */}
             <View style={styles.floatingButtonsContainer} >
-                <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Inventario')}>
-                    <Text style={styles.buttonText}>Inventario</Text>
-                </TouchableOpacity>
                 <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Entradas')}>
                     <Text style={styles.buttonText}>Entradas</Text>
                 </TouchableOpacity>

@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
+import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions, Modal } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
+import CrearEntrada from '../actions/CrearEntrada';
 
 interface Entrada {
   id_entrada: number;
@@ -21,6 +22,7 @@ const Entradas = ({ navigation }: any) => {
   const [entradas, setEntradas] = useState<Entrada[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
 
   if (!auth) {
     return <Text>Por favor inicia sesión</Text>;
@@ -82,7 +84,7 @@ const Entradas = ({ navigation }: any) => {
 
       {/*Botones*/}
       <View style={[styles.buttonContainer, isLandscape && styles.buttonContainerLandscape]}>
-        <TouchableOpacity style={styles.greenButton} onPress={() => navigation.navigate('NuevaEntrada')}>
+      <TouchableOpacity style={styles.greenButton} onPress={() => setModalVisible(true)}>
           <Text style={styles.buttonText}>Nueva Entrada</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.redButton}>
@@ -139,9 +141,6 @@ const Entradas = ({ navigation }: any) => {
 
       {/*Boton flotante */}
       <View style={styles.floatingButtonsContainer} >
-        <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Inventario')}>
-          <Text style={styles.buttonText}>Inventario</Text>
-        </TouchableOpacity>
         <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Salidas')}>
           <Text style={styles.buttonText}>Salidas</Text>
         </TouchableOpacity>
@@ -149,10 +148,10 @@ const Entradas = ({ navigation }: any) => {
           <Text style={styles.buttonText}>Traslados</Text>
         </TouchableOpacity>
       </View>
+      <CrearEntrada visible={modalVisible} onClose={() => setModalVisible(false)} />
     </View >
   );
 };
-
 
 export default Entradas
 
