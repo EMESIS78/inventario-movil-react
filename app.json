@@ -1,20 +1,11 @@
 {
   "expo": {
-<<<<<<< HEAD
     "name": "inventario-movil",
     "slug": "inventario-movil",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "inventariomovil",
-=======
-    "name": "prueba-funcional-expo",
-    "slug": "prueba-funcional-expo",
-    "version": "1.0.0",
-    "orientation": "default",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
->>>>>>> 90c8a52cb5a20bb1448955e8eda572e60dff39e8
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -24,12 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-<<<<<<< HEAD
       },
       "edgeToEdgeEnabled": true
-=======
-      }
->>>>>>> 90c8a52cb5a20bb1448955e8eda572e60dff39e8
     },
     "web": {
       "bundler": "metro",
