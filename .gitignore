@@ -10,7 +10,10 @@ web-build/
 expo-env.d.ts
 
 # Native
+<<<<<<< HEAD
 .kotlin/
+=======
+>>>>>>> 90c8a52cb5a20bb1448955e8eda572e60dff39e8
 *.orig.*
 *.jks
 *.p8

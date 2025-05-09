@@ -1,9 +1,17 @@
+<<<<<<< HEAD
 import { Href, Link } from 'expo-router';
+=======
+import { Link } from 'expo-router';
+>>>>>>> 90c8a52cb5a20bb1448955e8eda572e60dff39e8
 import { openBrowserAsync } from 'expo-web-browser';
 import { type ComponentProps } from 'react';
 import { Platform } from 'react-native';
 
+<<<<<<< HEAD
 type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: Href & string };
+=======
+type Props = Omit<ComponentProps<typeof Link>, 'href'> & { href: string };
+>>>>>>> 90c8a52cb5a20bb1448955e8eda572e60dff39e8
 
 export function ExternalLink({ href, ...rest }: Props) {
   return (
