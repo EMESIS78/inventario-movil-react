@@ -6,16 +6,16 @@ import { AuthContext } from '../../src/AuthContext';
 import Alert from '../customs/Alert';
 import CustomDropdown from '../customs/CustomDropdown';
 
-const CrearEntrada = ({ visible, onClose }) => {
+const CrearEntrada = ({ visible, onClose, onSuccess }) => {
     const auth = useContext(AuthContext);
-
     const [almacen, setAlmacen] = useState('');
     const [documento, setDocumento] = useState('');
     const [proveedor, setProveedor] = useState('');
-    const [productos, setProductos] = useState([{ nombre: '', codigo: '', cantidad: '' }]);
+    const [productos, setProductos] = useState([]);
+    const [productoTemp, setProductoTemp] = useState({ nombre: '', codigo: '', cantidad: '' });
     const [almacenes, setAlmacenes] = useState([]);
     const [alertVisible, setAlertVisible] = useState(false);
-    const [alertTitle, setAlertTitle] = useState(''); // Título de la alerta
+    const [alertTitle, setAlertTitle] = useState('');
     const [alertMessage, setAlertMessage] = useState('');
     const [wasSuccessful, setWasSuccessful] = useState(false);
 
@@ -47,44 +47,53 @@ const CrearEntrada = ({ visible, onClose }) => {
         fetchAlmacenes();
     }, [auth.token]);
 
+    const handleChangeTemp = (field, value) => {
+        setProductoTemp(prev => ({ ...prev, [field]: value }));
+    };
 
     const showCustomAlert = (title, message) => {
         setAlertTitle(title);
         setAlertMessage(message);
-        setAlertVisible(true); // Muestra la alerta
+        setAlertVisible(true);
     };
 
     const closeAlert = () => {
         setAlertVisible(false);
 
         if (wasSuccessful) {
-            // Limpia el formulario solo si fue exitoso
             setAlmacen('');
             setDocumento('');
             setProveedor('');
-            setProductos([{ nombre: '', codigo: '', cantidad: '' }]);
-            onClose(); // cierra el modal después de aceptar la alerta
+            setProductos([]);
+            onClose();
+            onSuccess();
         }
     };
 
     const handleAddProducto = () => {
-        setProductos([...productos, { nombre: '', cantidad: '' }]);
-    };
+        const { nombre, codigo, cantidad } = productoTemp;
 
-    const handleChangeProducto = (index, field, value) => {
-        const updated = [...productos];
-        updated[index][field] = value;
-        setProductos(updated);
-    };
-
-    const handleSubmit = async () => {
-        // Validaciones básicas
-        if (!almacen || !documento.trim() || !proveedor.trim()) {
-            showCustomAlert("Campos requeridos", "Debes llenar todos los campos antes de continuar.");
+        if (!nombre.trim() || !codigo.trim() || !cantidad || isNaN(cantidad)) {
+            showCustomAlert("Producto incompleto", "Completa todos los datos antes de agregar.");
             return;
         }
 
-        // Validar productos
+        setProductos([...productos, {
+            nombre: nombre.trim(),
+            codigo: codigo.trim(),
+            cantidad: parseInt(cantidad)
+        }]);
+
+        // Limpiar inputs
+        setProductoTemp({ nombre: '', codigo: '', cantidad: '' });
+    };
+
+    const handleSubmit = async () => {
+        if (!almacen || !documento.trim() || !proveedor.trim()) {
+            showCustomAlert("Campos incompletos", "Debes llenar todos los campos antes de continuar.");
+            return;
+        }
+
         for (let i = 0; i < productos.length; i++) {
             const { nombre, codigo, cantidad } = productos[i];
             if (!nombre.trim() || !codigo.trim() || !cantidad || isNaN(cantidad)) {
@@ -97,7 +106,7 @@ const CrearEntrada = ({ visible, onClose }) => {
             const payload = {
                 p_id_almacen: parseInt(almacen),
                 p_documento: documento.trim(),
-                p_id_proveedor: proveedor.trim(), // RUC o identificador
+                p_id_proveedor: proveedor.trim(),
                 p_productos: productos.map(p => ({
                     id_articulo: p.nombre.trim(),
                     codigo: p.codigo?.trim() || '',
@@ -134,13 +143,22 @@ const CrearEntrada = ({ visible, onClose }) => {
 
             const { nombre, codigo } = response.data;
 
-            const updated = [...productos];
-            updated[index].nombre = nombre;
-            updated[index].codigo = codigo;
-            setProductos(updated);
+            if (index === -1) {
+                // Actualiza el producto temporal
+                setProductoTemp(prev => ({
+                    ...prev,
+                    nombre,
+                    codigo,
+                }));
+            } else {
+                // (opcional, si en el futuro vuelves a usar índices)
+                const updated = [...productos];
+                updated[index].nombre = nombre;
+                updated[index].codigo = codigo;
+                setProductos(updated);
+            }
         } catch (error) {
             console.error('❌ Producto no encontrado o error en la búsqueda:', error);
-            // Opcional: puedes mostrar una alerta si no lo encuentra
         }
     };
 
@@ -148,17 +166,21 @@ const CrearEntrada = ({ visible, onClose }) => {
         setAlmacen('');
         setDocumento('');
         setProveedor('');
-        setProductos([{ nombre: '', codigo: '', cantidad: '' }]);
+        setProductos([]);
         onClose();
     };
 
+    const eliminarProducto = (index) => {
+        const nuevos = productos.filter((_, i) => i !== index);
+        setProductos(nuevos);
+    };
+
     return (
-        <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
-            <View style={styles.modalOverlay}>
-                <ScrollView style={styles.modalContent}>
+        <Modal visible={visible} animationType="fade">
+            <View style={{ flex: 1 }}>
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
                     <Text style={styles.title}>Crear Nueva Entrada</Text>
 
-                    {/* Dropdown personalizado para seleccionar el almacén */}
                     <CustomDropdown
                         label="Selecciona un almacén"
                         data={almacenes}
@@ -182,35 +204,55 @@ const CrearEntrada = ({ visible, onClose }) => {
                     />
 
                     <Text style={styles.subtitle}>Productos</Text>
-                    {productos.map((producto, index) => (
-                        <View key={index} style={styles.productRow}>
-                            <TextInput
-                                placeholder="Nombre"
-                                value={producto.nombre}
-                                onChangeText={(text) => handleChangeProducto(index, 'nombre', text)}
-                                onBlur={() => buscarProducto(index, 'nombre', producto.nombre)}
-                                style={styles.inputSmall}
-                            />
-                            <TextInput
-                                placeholder="Código"
-                                value={producto.codigo}
-                                onChangeText={(text) => handleChangeProducto(index, 'codigo', text)}
-                                onBlur={() => buscarProducto(index, 'codigo', producto.codigo)}
-                                style={styles.inputSmall}
-                            />
-                            <TextInput
-                                placeholder="Cantidad"
-                                value={producto.cantidad}
-                                onChangeText={(text) => handleChangeProducto(index, 'cantidad', text)}
-                                style={styles.inputSmall}
-                                keyboardType="numeric"
-                            />
-                        </View>
-                    ))}
+
+                    <View style={styles.productRow}>
+                        <TextInput
+                            placeholder="Nombre"
+                            value={productoTemp.nombre}
+                            onChangeText={(text) => handleChangeTemp('nombre', text)}
+                            onBlur={() => buscarProducto(-1, 'nombre', productoTemp.nombre)}
+                            style={styles.inputSmall}
+                        />
+                        <TextInput
+                            placeholder="Código"
+                            value={productoTemp.codigo}
+                            onChangeText={(text) => handleChangeTemp('codigo', text)}
+                            onBlur={() => buscarProducto(-1, 'codigo', productoTemp.codigo)}
+                            style={styles.inputSmall}
+                        />
+                        <TextInput
+                            placeholder="Cantidad"
+                            value={productoTemp.cantidad}
+                            onChangeText={(text) => handleChangeTemp('cantidad', text)}
+                            style={styles.inputSmall}
+                            keyboardType="numeric"
+                        />
+                    </View>
 
                     <TouchableOpacity style={styles.addButton} onPress={handleAddProducto}>
-                        <Text style={styles.addButtonText}>+ Agregar Producto</Text>
+                        <Text style={styles.addButtonText}>+ Agregar otro producto</Text>
                     </TouchableOpacity>
+
+                    <Text style={styles.subtitle}>Resumen de Productos</Text>
+                    <View style={styles.table}>
+                        <View style={styles.tableRowHeader}>
+                            <Text style={styles.tableHeaderCell}>Nombre</Text>
+                            <Text style={styles.tableHeaderCell}>Código</Text>
+                            <Text style={styles.tableHeaderCell}>Cantidad</Text>
+                            <Text style={styles.tableHeaderCell}>Acciones</Text>
+                        </View>
+
+                        {productos.map((producto, index) => (
+                            <View key={`fila-${index}`} style={styles.tableRow}>
+                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode='tail'>{producto.nombre}</Text>
+                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode='tail'>{producto.codigo}</Text>
+                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode='tail'>{producto.cantidad}</Text>
+                                <TouchableOpacity style={styles.deleteProduct} onPress={() => eliminarProducto(index)}>
+                                    <Text style={styles.tableCell}>Eliminar</Text>
+                                </TouchableOpacity>
+                            </View>
+                        ))}
+                    </View>
 
                     <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
                         <Text style={styles.submitText}>Registrar Entrada</Text>
@@ -220,30 +262,21 @@ const CrearEntrada = ({ visible, onClose }) => {
                         <Text style={styles.closeText}>Cancelar</Text>
                     </TouchableOpacity>
                 </ScrollView>
+                <Alert
+                    visible={alertVisible}
+                    title={alertTitle}
+                    message={alertMessage}
+                    onClose={closeAlert} />
             </View>
-            {/* Alerta personalizada */}
-            <Alert
-                visible={alertVisible}
-                title={alertTitle}
-                message={alertMessage}
-                onClose={closeAlert} />
         </Modal>
     );
 };
 
 const styles = StyleSheet.create({
-    modalOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        justifyContent: 'center',
-        paddingTop: 30,
-    },
-    modalContent: {
-        backgroundColor: '#fff',
-        margin: 20,
-        borderRadius: 10,
+    scrollContainer: {
         padding: 20,
-        maxHeight: '90%',
+        backgroundColor: '#fff',
+        paddingBottom: 40,
     },
     title: {
         fontSize: 22,
@@ -275,20 +308,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     addButton: {
-        alignSelf: 'flex-start',
-        backgroundColor: '#ddd',
-        padding: 8,
+        backgroundColor: '#e0e0e0',
+        padding: 10,
         borderRadius: 5,
-        marginTop: 5,
+        marginBottom: 15
     },
     addButtonText: {
         color: '#333',
     },
     submitButton: {
         backgroundColor: '#28a745',
-        padding: 12,
-        borderRadius: 6,
-        marginTop: 20,
+        padding: 15,
+        borderRadius: 5,
+        flex: 1
     },
     submitText: {
         color: '#fff',
@@ -297,13 +329,51 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         backgroundColor: '#dc3545',
-        padding: 10,
-        borderRadius: 6,
-        marginTop: 10,
+        padding: 15,
+        borderRadius: 5,
+        flex: 1,
+        marginRight: 10
     },
     closeText: {
         color: '#fff',
         textAlign: 'center',
+    },
+    table: {
+        marginTop: 10,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 5,
+        overflow: 'hidden',
+    },
+    tableRowHeader: {
+        flexDirection: 'row',
+        backgroundColor: '#f0f0f0',
+        borderBottomWidth: 1,
+        borderColor: '#ccc',
+    },
+    tableRow: {
+        flexDirection: 'row',
+        borderBottomWidth: 1,
+        borderColor: '#eee',
+    },
+    tableHeaderCell: {
+        flex: 1,
+        padding: 10,
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    tableCell: {
+        flex: 1,
+        alignItems: 'center',
+        padding: 10,
+        textAlign: 'center',
+    },
+    deleteProduct: {
+        flex: 1,
+        alignItems: 'center',
+        padding: 1,
+        backgroundColor: '#f44336',
+        borderRadius: 5,
     },
 });
 

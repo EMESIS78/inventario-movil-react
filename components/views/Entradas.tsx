@@ -148,7 +148,7 @@ const Entradas = ({ navigation }: any) => {
           <Text style={styles.buttonText}>Traslados</Text>
         </TouchableOpacity>
       </View>
-      <CrearEntrada visible={modalVisible} onClose={() => setModalVisible(false)} />
+      <CrearEntrada visible={modalVisible} onClose={() => setModalVisible(false)} onSuccess={fetchEntradas}/>
     </View >
   );
 };

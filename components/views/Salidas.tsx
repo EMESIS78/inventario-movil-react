@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
+import CrearSalida from '../actions/CrearSalida';
 
 interface Salida {
     id_salida: number;
@@ -21,6 +22,7 @@ const Salidas = ({ navigation }: any) => {
     const [salidas, setSalidas] = useState<Salida[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+    const [modalVisible, setModalVisible] = useState(false);
 
     if (!auth) {
         return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
@@ -70,7 +72,6 @@ const Salidas = ({ navigation }: any) => {
             </TouchableOpacity>
             <Text style={styles.title}>Salidas</Text>
 
-            {/* Barra de Búsqueda */}
             <TextInput
                 style={styles.searchBar}
                 placeholder="Buscar por motivo o almacén"
@@ -79,9 +80,8 @@ const Salidas = ({ navigation }: any) => {
                 onChangeText={setSearch}
             />
 
-            {/* Botones */}
             <View style={[styles.buttonContainer, isLandscape && styles.buttonContainerLandscape]}>
-                <TouchableOpacity style={styles.greenButton} onPress={() => navigation.navigate('NuevaSalida')}>
+                <TouchableOpacity style={styles.greenButton} onPress={() => setModalVisible(true)}>
                     <Text style={styles.buttonText}>Nueva Salida</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.redButton}>
@@ -120,7 +120,7 @@ const Salidas = ({ navigation }: any) => {
                     />
                 </View>
             ) : (
-                // Vista Vertical - Tarjetas
+                
                 <FlatList
                     data={filteredSalidas}
                     keyExtractor={(item) => item.id_salida.toString()}
@@ -137,8 +137,12 @@ const Salidas = ({ navigation }: any) => {
                     )}
                 />
             )}
+            <CrearSalida
+                visible={modalVisible}
+                onClose={() => setModalVisible(false)}
+                onSuccess={fetchSalidas}
+            />
 
-            {/* Botón Flotante */}
             <View style={styles.floatingButtonsContainer} >
                 <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Entradas')}>
                     <Text style={styles.buttonText}>Entradas</Text>

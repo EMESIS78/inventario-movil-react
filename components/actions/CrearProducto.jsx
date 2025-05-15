@@ -132,16 +132,6 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
                     <TextInput style={styles.input} placeholder="Ubicación" value={ubicacion} onChangeText={setUbicacion} />
 
 
-
-                    {/* Botón de subir imagen */}
-                    <TouchableOpacity style={styles.imageButton} onPress={seleccionarImagen}>
-                        <Ionicons name="image" size={24} color="white" />
-                        <Text style={styles.imageButtonText}>Subir Imagen</Text>
-                    </TouchableOpacity>
-
-                    {/* Previsualización de imagen */}
-                    {imagen && <Image source={{ uri: imagen }} style={styles.imagePreview} />}
-
                     {/* Botones de acción */}
                     <View style={[
                         styles.buttonContainer,
@@ -180,7 +170,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.5)'
     },
     modalContainer: {
-        width: '90%',
+        width: '100%',
         padding: 20,
         backgroundColor: 'white',
         borderRadius: 10,
