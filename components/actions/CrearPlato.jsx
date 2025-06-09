@@ -1,19 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Alert, ScrollView } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, ScrollView, Image } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { useWindowDimensions } from 'react-native';
+import Alert from '../customs/Alert';
 
 const CrearPlato = ({ visible, onClose, onCreated }) => {
     const { width, height } = useWindowDimensions();
     const isLandscape = width > height;
     const [nombre, setNombre] = useState('');
+    const [imagen, setImagen] = useState(null);
     const [descripcion, setDescripcion] = useState('');
     const [precio, setPrecio] = useState('');
     const [insumos, setInsumos] = useState([{ id_producto: '', cantidad_requerida: '' }]);
     const [dropdownVisibleIndex, setDropdownVisibleIndex] = useState(null);
     const [productos, setProductos] = useState([]);
+    const [alertVisible, setAlertVisible] = useState(false);
+    const [alertTitle, setAlertTitle] = useState(''); // Título de la alerta
+    const [alertMessage, setAlertMessage] = useState('');
+
+    const showCustomAlert = (title, message) => {
+        setAlertTitle(title);
+        setAlertMessage(message);
+        setAlertVisible(true); // Muestra la alerta
+    };
+
+    const closeAlert = () => {
+        setAlertVisible(false); // Ocultar alerta
+        onClose();
+    };
 
     useEffect(() => {
         const fetchProductos = async () => {
@@ -26,6 +43,27 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
         };
         fetchProductos();
     }, []);
+
+    const seleccionarImagen = async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 1,
+        });
+
+        if (!result.canceled && result.assets.length > 0) {
+            const asset = result.assets[0];
+            const fileName = asset.uri.split('/').pop();
+            const fileType = asset.mimeType || 'image/jpeg';
+
+            setImagen({
+                uri: asset.uri,
+                name: fileName,
+                type: fileType,
+            });
+        }
+    };
 
     const handleAgregarInsumo = () => {
         setInsumos([...insumos, { id_producto: '', cantidad_requerida: '' }]);
@@ -49,26 +87,40 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
         }
 
         try {
-            await axios.post(`${API_URL}/platos`, {
-                nombre,
-                descripcion,
-                precio: parseFloat(precio),
-                insumos: insumos.map(i => ({
-                    id_producto: i.id_producto,
-                    cantidad_requerida: parseFloat(i.cantidad_requerida)
-                }))
+            const formData = new FormData();
+            formData.append('nombre', nombre);
+            formData.append('descripcion', descripcion);
+            formData.append('precio', parseFloat(precio));
+            formData.append('insumos', JSON.stringify(insumos.map(i => ({
+                id_producto: i.id_producto,
+                cantidad_requerida: parseFloat(i.cantidad_requerida)
+            }))));
+
+            if (imagen) {
+                formData.append('imagen', {
+                    uri: imagen.uri,
+                    name: imagen.name,
+                    type: imagen.type,
+                });
+            }
+
+            await axios.post(`${API_URL}/platos`, formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
 
-            Alert.alert('Éxito', 'Plato creado correctamente');
+            showCustomAlert('Éxito', 'Plato creado correctamente');
             onCreated();
             onClose();
             setNombre('');
             setDescripcion('');
             setPrecio('');
             setInsumos([{ id_producto: '', cantidad_requerida: '' }]);
+            setImagen(null);
         } catch (error) {
             console.error('Error al guardar el plato:', error);
-            Alert.alert('Error', 'No se pudo guardar el plato');
+            showCustomAlert('Error', 'No se pudo guardar el plato');
         }
     };
     const productoOptions = productos.map((prod) => ({
@@ -77,138 +129,151 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
     }));
 
     return (
-        <Modal visible={visible} animationType="slide" transparent>
-            <View style={styles.overlay}>
-                <View style={[
-                                    styles.modalContainer,
-                                    { width: isLandscape ? '70%' : '90%', maxHeight: isLandscape ? '80%' : '90%' }
-                                ]}>
-                    <ScrollView
-                        contentContainerStyle={{ paddingBottom: 20 }}
-                        keyboardShouldPersistTaps="handled"
-                        nestedScrollEnabled
-                    >
-                        <Text style={styles.title}>Crear Nuevo Plato</Text>
+        <Modal visible={visible} animationType="fade">
+            <View style={{ flex: 1 }}>
 
-                        <TextInput
-                            placeholder="Nombre del plato"
-                            value={nombre}
-                            onChangeText={setNombre}
-                            style={styles.input}
+                <ScrollView
+                    contentContainerStyle={styles.scrollContainer}
+                    keyboardShouldPersistTaps="handled"
+                    nestedScrollEnabled
+                >
+                    <Text style={styles.title}>Crear Nuevo Plato</Text>
+
+                    <TextInput
+                        placeholder="Nombre del plato"
+                        value={nombre}
+                        onChangeText={setNombre}
+                        style={styles.input}
+                    />
+
+                    <TextInput
+                        placeholder="Descripción"
+                        value={descripcion}
+                        onChangeText={setDescripcion}
+                        style={styles.input}
+                        multiline
+                    />
+
+                    <TextInput
+                        placeholder="Precio (€)"
+                        value={precio}
+                        onChangeText={setPrecio}
+                        style={styles.input}
+                        keyboardType="numeric"
+                    />
+                    <TouchableOpacity onPress={seleccionarImagen} style={styles.addButton}>
+                        <Text style={styles.addButtonText}>
+                            {imagen ? 'Cambiar Imagen' : 'Seleccionar Imagen'}
+                        </Text>
+                    </TouchableOpacity>
+
+                    {imagen && (
+                        <Image
+                            source={{ uri: imagen.uri }}
+                            style={{ width: 100, height: 100, marginVertical: 10, borderRadius: 8 }}
                         />
+                    )}
 
-                        <TextInput
-                            placeholder="Descripción"
-                            value={descripcion}
-                            onChangeText={setDescripcion}
-                            style={styles.input}
-                            multiline
-                        />
+                    <Text style={styles.sectionTitle}>Insumos</Text>
+                    {insumos.map((insumo, index) => (
+                        <View key={index} style={{ ...styles.insumoContainer, marginBottom: index === insumos.length - 1 ? 10 : 0 }}>
+                            <View style={{ flex: 2 }}>
+                                <TouchableOpacity
+                                    onPress={() => setDropdownVisibleIndex(index)}
+                                    style={{
+                                        borderWidth: 1,
+                                        borderColor: '#ccc',
+                                        padding: 10,
+                                        borderRadius: 8,
+                                        backgroundColor: '#fff'
+                                    }}
+                                >
+                                    <Text>
+                                        {
+                                            productos.find(p => p.id_producto === insumo.id_producto)?.nombre
+                                            || 'Insumo'
+                                        }
+                                    </Text>
+                                </TouchableOpacity>
 
-                        <TextInput
-                            placeholder="Precio (€)"
-                            value={precio}
-                            onChangeText={setPrecio}
-                            style={styles.input}
-                            keyboardType="numeric"
-                        />
-
-                        <Text style={styles.sectionTitle}>Insumos</Text>
-                        {insumos.map((insumo, index) => (
-                            <View key={index} style={{ ...styles.insumoContainer, marginBottom: index === insumos.length - 1 ? 10 : 0 }}>
-                                <View style={{ flex: 2 }}>
-                                    <TouchableOpacity
-                                        onPress={() => setDropdownVisibleIndex(index)}
+                                {dropdownVisibleIndex === index && (
+                                    <View
                                         style={{
+                                            position: 'absolute',
+                                            top: 50,
+                                            left: 0,
+                                            right: 0,
+                                            backgroundColor: '#fff',
                                             borderWidth: 1,
                                             borderColor: '#ccc',
-                                            padding: 10,
                                             borderRadius: 8,
-                                            backgroundColor: '#fff'
+                                            zIndex: 999,
                                         }}
                                     >
-                                        <Text>
-                                            {
-                                                productos.find(p => p.id_producto === insumo.id_producto)?.nombre
-                                                || 'Insumo'
-                                            }
-                                        </Text>
-                                    </TouchableOpacity>
-
-                                    {dropdownVisibleIndex === index && (
-                                        <View
-                                            style={{
-                                                position: 'absolute',
-                                                top: 50,
-                                                left: 0,
-                                                right: 0,
-                                                backgroundColor: '#fff',
-                                                borderWidth: 1,
-                                                borderColor: '#ccc',
-                                                borderRadius: 8,
-                                                zIndex: 999,
-                                            }}
-                                        >
-                                            <ScrollView style={{ maxHeight: 150 }}>
-                                                {productoOptions.map(option => (
-                                                    <TouchableOpacity
-                                                        key={option.value}
-                                                        onPress={() => {
-                                                            handleChangeInsumo(index, 'id_producto', option.value);
-                                                            setDropdownVisibleIndex(null);
-                                                        }}
-                                                        style={{
-                                                            padding: 10,
-                                                            borderBottomWidth: 1,
-                                                            borderBottomColor: '#eee'
-                                                        }}
-                                                    >
-                                                        <Text>{option.label}</Text>
-                                                    </TouchableOpacity>
-                                                ))}
-                                            </ScrollView>
-                                        </View>
-                                    )}
-                                </View>
-                                <TextInput
-                                    placeholder="Cantidad"
-                                    value={insumo.cantidad_requerida.toString()}
-                                    onChangeText={(text) => handleChangeInsumo(index, 'cantidad_requerida', text)}
-                                    style={styles.inputSmall}
-                                    keyboardType="numeric"
-                                />
-                                <TouchableOpacity onPress={() => handleEliminarInsumo(index)} style={styles.removeButton}>
-                                    <Text style={styles.removeButtonText}>X</Text>
-                                </TouchableOpacity>
+                                        <ScrollView style={{ maxHeight: 150 }}>
+                                            {productoOptions.map(option => (
+                                                <TouchableOpacity
+                                                    key={option.value}
+                                                    onPress={() => {
+                                                        handleChangeInsumo(index, 'id_producto', option.value);
+                                                        setDropdownVisibleIndex(null);
+                                                    }}
+                                                    style={{
+                                                        padding: 10,
+                                                        borderBottomWidth: 1,
+                                                        borderBottomColor: '#eee'
+                                                    }}
+                                                >
+                                                    <Text>{option.label}</Text>
+                                                </TouchableOpacity>
+                                            ))}
+                                        </ScrollView>
+                                    </View>
+                                )}
                             </View>
-                        ))}
 
-                        <TouchableOpacity onPress={handleAgregarInsumo} style={styles.addButton}>
-                            <Text style={styles.addButtonText}>+ Agregar Insumo</Text>
-                        </TouchableOpacity>
+                            <TextInput
+                                placeholder="Cantidad"
+                                value={insumo.cantidad_requerida.toString()}
+                                onChangeText={(text) => handleChangeInsumo(index, 'cantidad_requerida', text)}
+                                style={styles.inputSmall}
+                                keyboardType="numeric"
+                            />
+                            <TouchableOpacity onPress={() => handleEliminarInsumo(index)} style={styles.removeButton}>
+                                <Text style={styles.removeButtonText}>X</Text>
+                            </TouchableOpacity>
 
-                        <View style={styles.actions}>
-                            <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-                                <Text style={styles.cancelButtonText}>Cancelar</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleGuardar} style={styles.saveButton}>
-                                <Text style={styles.saveButtonText}>Guardar</Text>
-                            </TouchableOpacity>
                         </View>
-                    </ScrollView>
-                </View>
+                    ))}
+
+                    <TouchableOpacity onPress={handleAgregarInsumo} style={styles.addButton}>
+                        <Text style={styles.addButtonText}>+ Agregar Insumo</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.actions}>
+                        <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
+                            <Text style={styles.cancelButtonText}>Cancelar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={handleGuardar} style={styles.saveButton}>
+                            <Text style={styles.saveButtonText}>Guardar</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
             </View>
+            <Alert
+                visible={alertVisible}
+                title={alertTitle}
+                message={alertMessage}
+                onClose={closeAlert} />        
         </Modal>
     );
 };
 
 const styles = StyleSheet.create({
-    overlay: {
-        flex: 1,
-        height: '90%',
-        backgroundColor: 'rgba(0,0,0,0.3)',
-        justifyContent: 'center',
-        alignItems: 'center'
+    scrollContainer: {
+        padding: 20,
+        backgroundColor: '#fff',
+        paddingBottom: 40,
     },
     modalContainer: {
         width: '90%',

@@ -6,6 +6,9 @@ import axios from 'axios';
 import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
 import CrearSalida from '../actions/CrearSalida';
+import SalidaDetalle from '../extras/SalidaDetalle';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 interface Salida {
     id_salida: number;
@@ -23,6 +26,7 @@ const Salidas = ({ navigation }: any) => {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [modalVisible, setModalVisible] = useState(false);
+    const [detalleDocumento, setDetalleDocumento] = useState<string | null>(null);
 
     if (!auth) {
         return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
@@ -65,12 +69,41 @@ const Salidas = ({ navigation }: any) => {
         salida.motivo.toLowerCase().includes(search.toLowerCase())
     );
 
+    const descargarPDF = async () => {
+        try {
+            const pdfUrl = `${API_URL}/reporte-salidas`;
+            const fileUri = FileSystem.documentDirectory + 'reporte_salidas.pdf';
+
+            const downloadResumable = FileSystem.createDownloadResumable(
+                pdfUrl,
+                fileUri,
+                {
+                    headers: {
+                        Authorization: `Bearer ${auth.token}`,
+                    },
+                }
+            );
+            const result = await downloadResumable.downloadAsync();
+
+            if (result && result.uri) {
+                console.log('📄 PDF descargado en:', result.uri);
+                await Sharing.shareAsync(result.uri);
+            } else {
+                console.warn('⚠️ La descarga no se completó correctamente.');
+            }
+        } catch (error) {
+            console.error('❌ Error al descargar PDF:', error);
+        }
+    };
+
     return (
         <View style={styles.container}>
-            <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
-                <Ionicons name="menu" size={28} color="black" />
-            </TouchableOpacity>
-            <Text style={styles.title}>Salidas</Text>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                    <Ionicons name="menu" size={28} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Salidas</Text>
+            </View>
 
             <TextInput
                 style={styles.searchBar}
@@ -84,7 +117,7 @@ const Salidas = ({ navigation }: any) => {
                 <TouchableOpacity style={styles.greenButton} onPress={() => setModalVisible(true)}>
                     <Text style={styles.buttonText}>Nueva Salida</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.redButton}>
+                <TouchableOpacity style={styles.redButton} onPress={descargarPDF}>
                     <Text style={styles.buttonText}>Descargar PDF</Text>
                 </TouchableOpacity>
             </View>
@@ -93,34 +126,43 @@ const Salidas = ({ navigation }: any) => {
                 <Text style={styles.noDataText}>No hay salidas registradas.</Text>
             ) : isLandscape ? (
                 // Vista Horizontal - Tabla
-                <View style={styles.tableContainer}>
-                    <View style={styles.tableHeader}>
-                        <Text style={styles.tableHeaderText}>#</Text>
-                        <Text style={styles.tableHeaderText}>Almacén</Text>
-                        <Text style={styles.tableHeaderText}>Motivo</Text>
-                        <Text style={styles.tableHeaderText}>Usuario</Text>
-                        <Text style={styles.tableHeaderText}>Fecha</Text>
-                        <Text style={styles.tableHeaderText}>Acciones</Text>
-                    </View>
-                    <FlatList
-                        data={filteredSalidas}
-                        keyExtractor={(item) => item.id_salida.toString()}
-                        renderItem={({ item, index }) => (
-                            <View style={styles.tableRow}>
-                                <Text style={styles.tableCell}>{index + 1}</Text>
-                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">{item.almacen}</Text>
-                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">{item.motivo}</Text>
-                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">{item.usuario}</Text>
-                                <Text style={styles.tableCell} >{new Date(item.created_at).toLocaleDateString()}</Text>
-                                <TouchableOpacity style={styles.blueButton} onPress={() => navigation.navigate('DetallesSalida', { id: item.id_salida })}>
+                <ScrollView style={styles.scrollContainer}>
+                    <View style={styles.tableContainer}>
+                        <View style={styles.tableHeader}>
+                            <Text style={styles.tableHeaderText}>#</Text>
+                            <Text style={styles.tableHeaderText}>Almacén</Text>
+                            <Text style={styles.tableHeaderText}>Motivo</Text>
+                            <Text style={styles.tableHeaderText}>Usuario</Text>
+                            <Text style={styles.tableHeaderText}>Fecha</Text>
+                            <Text style={styles.tableHeaderText}>Acciones</Text>
+                        </View>
+                        {filteredSalidas.map((item) => (
+                            <View key={item.id_salida} style={styles.tableRow}>
+                                <Text style={styles.tableCell}>{item.id_salida}</Text>
+                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
+                                    {item.motivo}
+                                </Text>
+                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
+                                    {item.almacen}
+                                </Text>
+                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
+                                    {item.usuario}
+                                </Text>
+                                <Text style={styles.tableCell}>
+                                    {new Date(item.created_at).toLocaleDateString()}
+                                </Text>
+                                <TouchableOpacity
+                                    style={styles.blueButton}
+                                    onPress={() => setDetalleDocumento(item.id_salida.toString())}
+                                >
                                     <Text style={styles.buttonText}>Ver Detalles</Text>
                                 </TouchableOpacity>
                             </View>
-                        )}
-                    />
-                </View>
+                        ))}
+                    </View>
+                </ScrollView>
             ) : (
-                
+
                 <FlatList
                     data={filteredSalidas}
                     keyExtractor={(item) => item.id_salida.toString()}
@@ -130,7 +172,10 @@ const Salidas = ({ navigation }: any) => {
                             <Text style={styles.cardText}>Almacén: {item.almacen}</Text>
                             <Text style={styles.cardText}>Usuario: {item.usuario}</Text>
                             <Text style={styles.cardDate}>Fecha: {new Date(item.created_at).toLocaleString()}</Text>
-                            <TouchableOpacity style={styles.blueButton} onPress={() => navigation.navigate('DetallesSalida', { id: item.id_salida })}>
+                            <TouchableOpacity
+                                style={styles.blueButton}
+                                onPress={() => setDetalleDocumento(item.id_salida.toString())}
+                            >
                                 <Text style={styles.buttonText}>Ver Detalles</Text>
                             </TouchableOpacity>
                         </View>
@@ -142,15 +187,13 @@ const Salidas = ({ navigation }: any) => {
                 onClose={() => setModalVisible(false)}
                 onSuccess={fetchSalidas}
             />
-
-            <View style={styles.floatingButtonsContainer} >
-                <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Entradas')}>
-                    <Text style={styles.buttonText}>Entradas</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Traslados')}>
-                    <Text style={styles.buttonText}>Traslados</Text>
-                </TouchableOpacity>
-            </View>
+            {detalleDocumento && (
+                <SalidaDetalle
+                    visible={!!detalleDocumento}
+                    onClose={() => setDetalleDocumento(null)}
+                    id_salida={detalleDocumento}
+                />
+            )}
         </View >
     );
 };
@@ -158,13 +201,22 @@ const Salidas = ({ navigation }: any) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
+        backgroundColor: '#F5F7FA',
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 40,
+        paddingBottom: 10,
         backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderColor: '#ddd',
     },
     title: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: 'bold',
-        marginBottom: 16,
+        marginLeft: 16,
     },
     noDataText: {
         textAlign: 'center',
@@ -173,43 +225,33 @@ const styles = StyleSheet.create({
         color: 'gray',
     },
     card: {
+        backgroundColor: '#fff',
         padding: 16,
-        marginVertical: 8,
-        backgroundColor: '#f9f9f9',
-        borderRadius: 8,
+        marginHorizontal: 10,
+        marginVertical: 6,
+        borderRadius: 10,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
     },
     cardTitle: {
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 4,
     },
     cardText: {
-        fontSize: 16,
-        color: 'gray',
+        fontSize: 14,
+        color: '#666',
+        marginBottom: 2,
     },
     cardDate: {
-        fontSize: 14,
-        color: 'darkgray',
-        marginTop: 5,
-    },
-    floatingButtonsContainer: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        paddingHorizontal: 20,
-    },
-    floatingButton: {
-        backgroundColor: '#007bff',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
-        borderRadius: 30,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-        shadowRadius: 3,
-        elevation: 5,
+        fontSize: 13,
+        color: '#999',
+        marginTop: 6,
+        marginBottom: 10,
     },
     buttonText: {
         color: '#fff',
@@ -217,35 +259,37 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     searchBar: {
-        height: 40,
+        marginHorizontal: 20,
+        marginTop: 10,
         backgroundColor: '#fff',
-        borderRadius: 8,
-        paddingHorizontal: 10,
-        marginBottom: 10,
+        padding: 10,
+        borderRadius: 10,
         borderWidth: 1,
-        borderColor: '#ddd',
+        borderColor: '#ccc',
     },
     buttonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 10,
+        marginVertical: 12,
+        marginHorizontal: 10,
     },
     buttonContainerLandscape: {
-        justifyContent: 'center', // Centra los botones en horizontal
+        justifyContent: 'space-around',
+        flexWrap: 'wrap',
     },
     greenButton: {
         backgroundColor: '#28a745',
         paddingVertical: 10,
         paddingHorizontal: 20,
-        borderRadius: 8,
-        marginHorizontal: 5,
+        borderRadius: 10,
+        elevation: 2,
     },
     redButton: {
         backgroundColor: '#dc3545',
         paddingVertical: 10,
         paddingHorizontal: 20,
-        borderRadius: 8,
-        marginHorizontal: 5,
+        borderRadius: 10,
+        elevation: 2,
     },
     blueButton: {
         backgroundColor: '#007bff',
@@ -254,31 +298,44 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
     },
+    scrollContainer: {
+        flex: 1,
+        paddingHorizontal: 10,
+    },
     tableContainer: {
         marginTop: 10,
     },
     tableHeader: {
         flexDirection: 'row',
-        backgroundColor: '#f1f1f1',
-        padding: 10,
-        borderRadius: 5,
+        backgroundColor: '#4287f5',
+        paddingVertical: 10,
+        paddingHorizontal: 6,
+        borderRadius: 6,
+        marginBottom: 4,
+        marginHorizontal: 4,
     },
     tableHeaderText: {
         flex: 1,
         fontWeight: 'bold',
+        fontSize: 14,
         textAlign: 'center',
+        color: '#fff',
     },
     tableRow: {
         flexDirection: 'row',
-        padding: 10,
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        marginHorizontal: 4,
+        paddingVertical: 10,
         borderBottomWidth: 1,
-        borderBottomColor: '#ddd',
+        borderBottomColor: '#e9ecef',
+        borderRadius: 6,
     },
     tableCell: {
         flex: 1,
-        textAlign: 'justify',
-        padding: 10,
-        fontSize: 14,
+        fontSize: 13,
+        textAlign: 'center',
+        color: '#444',
     },
     menuButton: {
         position: 'absolute',

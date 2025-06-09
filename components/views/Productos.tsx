@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Animated } from 'react-native';
+import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView, ScrollView, Dimensions } from 'react-native';
 import { AuthContext } from '../../src/AuthContext';
 import axios from 'axios';
 import { API_URL } from '@env';
@@ -48,7 +48,8 @@ const Productos = () => {
         return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
     }
 
-    const { user, token } = auth;
+    const { user, token, loading: authLoading } = auth;
+    console.log('🧑 Usuario actual:', user);
 
     const fetchAlmacenes = useCallback(async () => {
         try {
@@ -72,12 +73,18 @@ const Productos = () => {
     }, []);
 
     const fetchInventario = useCallback(async () => {
-        if (!selectedAlmacen) return;
+        const idAlmacen = user?.rol === 'admin'
+            ? selectedAlmacen?.id
+            : user?.almacen_id;
+
+        if (!idAlmacen || productosBase.length === 0) return;
+
         setLoading(true);
         try {
-            const response = await axios.get(`${API_URL}/inventario?id_almacen=${selectedAlmacen.id}`, {
+            const response = await axios.get(`${API_URL}/inventario?id_almacen=${idAlmacen}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+
             const inventario = response.data;
 
             const productosConStock = inventario.map((item: any) => {
@@ -86,42 +93,54 @@ const Productos = () => {
             }).filter(Boolean) as Producto[];
 
             setProductos(productosConStock);
-            console.log('✅ Inventario fusionado');
+            console.log('✅ Inventario cargado');
         } catch (error) {
             console.error('❌ Error al obtener inventario:', error);
         } finally {
             setLoading(false);
         }
-    }, [selectedAlmacen, productosBase, token]);
+    }, [selectedAlmacen, productosBase, token, user]);
 
     useFocusEffect(
         useCallback(() => {
             fetchAlmacenes();
             fetchProductosBase();
-        }, [fetchAlmacenes, fetchProductosBase,search])
+        }, [fetchAlmacenes, fetchProductosBase, search])
     );
 
     useEffect(() => {
-        if (productosBase.length > 0 && selectedAlmacen) {
-            fetchInventario();
-        }
-    }, [selectedAlmacen, productosBase]);
+    if (authLoading) return;
+
+    const idAlmacen = user?.rol === 'admin'
+        ? selectedAlmacen?.id
+        : user?.almacen_id;
+
+    if (!idAlmacen || productosBase.length === 0) {
+        setLoading(false); // detener el loader visible
+        return;
+    }
+
+    fetchInventario();
+}, [selectedAlmacen, productosBase, user, authLoading]);
 
     return (
         <View style={styles.container}>
             {/* Botón de menú hamburguesa */}
-            <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
-                <Ionicons name="menu" size={28} color="black" />
-            </TouchableOpacity>
-
-            <Text style={styles.title}>Lista de Insumos</Text>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                    <Ionicons name="menu" size={28} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Lista de Insumos</Text>
+            </View>
 
             {/* Dropdown para seleccionar almacén */}
-            <Dropdown
-                data={almacenes}
-                selectedValue={selectedAlmacen}
-                onSelect={setSelectedAlmacen}
-            />
+            {user?.rol === 'admin' && (
+                <Dropdown
+                    data={almacenes}
+                    selectedValue={selectedAlmacen}
+                    onSelect={setSelectedAlmacen}
+                />
+            )}
 
             {/* Campo de búsqueda */}
             <TextInput
@@ -145,7 +164,7 @@ const Productos = () => {
                     contentContainerStyle={{ paddingBottom: 80 }}
                     renderItem={({ item }) => (
                         <View style={[styles.card]}>
-                            <View style={styles.productInfo}>
+                            <View style={styles.cardContent}>
                                 <Text style={styles.productName}>{item.nombre}</Text>
                                 <Text style={styles.productDescription}>{item.marca}</Text>
                                 <Text style={styles.productPrice}>Unidad: {item.unidad_medida}</Text>
@@ -197,7 +216,7 @@ const Productos = () => {
             {/* Botón flotante para agregar productos */}
             {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
                 <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
-                    <Text style={styles.fabText}>+</Text>
+                    <Ionicons name="add" size={28} color="#fff" />
                 </TouchableOpacity>
             )}
 
@@ -223,94 +242,105 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#F5F7FA',
-        padding: 20,
     },
-    menuButton: {
-        position: 'absolute',
-        top: 50,
-        left: 20,
-        zIndex: 10, // Asegura que esté por encima de otros elementos
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 40,
+        paddingBottom: 10,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderColor: '#ddd',
     },
     title: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginLeft: 16,
     },
     searchInput: {
+        marginHorizontal: 20,
+        marginTop: 10,
         backgroundColor: '#fff',
         padding: 10,
-        borderRadius: 8,
+        borderRadius: 10,
         borderWidth: 1,
         borderColor: '#ccc',
-        marginBottom: 10,
+    },
+    loader: {
+        marginTop: 40,
+    },
+    flatListContainer: {
+        paddingHorizontal: 20,
+        paddingBottom: 100,
     },
     card: {
         flex: 1,
         backgroundColor: '#fff',
+        margin: 8,
         padding: 16,
-        marginBottom: 10,
-        borderRadius: 8,
+        borderRadius: 10,
+        elevation: 3,
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 2 },
         shadowRadius: 4,
-        elevation: 3,
+    },
+    cardContent: {
+        gap: 4,
     },
     productName: {
-        width: '100%',
-        fontSize: 18,
+        fontSize: 16,
         fontWeight: 'bold',
+        color: '#333',
     },
     productDescription: {
         fontSize: 14,
-        color: 'gray',
+        color: '#555',
     },
     productPrice: {
-        fontSize: 16,
-        fontWeight: 'bold',
+        fontSize: 14,
         color: '#007bff',
-        marginTop: 5,
     },
     productStock: {
         fontSize: 14,
         color: '#28a745',
     },
-    fab: {
-        position: 'absolute',
-        right: 20,
-        bottom: 20,
-        backgroundColor: '#007bff',
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 5,
-    },
-    fabText: {
-        color: '#fff',
-        fontSize: 24,
-        fontWeight: 'bold',
-    },
-    editButton: {
-        backgroundColor: '#007AFF',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginRight: 5,
-    },
-    productInfo: {
-        flex: 1
-    },
-    deleteButton: {
-        backgroundColor: '#DC3545',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-    },
     buttonContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
         marginTop: 10,
+        justifyContent: 'space-between',
+    },
+    editButton: {
+        backgroundColor: '#007bff',
+        padding: 10,
+        borderRadius: 8,
+        flex: 1,
+        marginRight: 5,
+        alignItems: 'center',
+    },
+    deleteButton: {
+        backgroundColor: '#dc3545',
+        padding: 10,
+        borderRadius: 8,
+        flex: 1,
+        marginLeft: 5,
+        alignItems: 'center',
+    },
+    fab: {
+        position: 'absolute',
+        bottom: 30,
+        right: 30,
+        backgroundColor: '#007bff',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 6,
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowOffset: { width: 0, height: 3 },
+        shadowRadius: 4,
     },
 });

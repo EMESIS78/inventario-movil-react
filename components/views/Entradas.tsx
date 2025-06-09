@@ -6,6 +6,9 @@ import axios from 'axios';
 import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
 import CrearEntrada from '../actions/CrearEntrada';
+import EntradaDetalle from '../extras/EntradaDetalle';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 
 interface Entrada {
   id_entrada: number;
@@ -23,6 +26,7 @@ const Entradas = ({ navigation }: any) => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
+  const [detalleDocumento, setDetalleDocumento] = useState<string | null>(null);
 
   if (!auth) {
     return <Text>Por favor inicia sesión</Text>;
@@ -66,28 +70,57 @@ const Entradas = ({ navigation }: any) => {
     entrada.usuario.toLowerCase().includes(search.toLowerCase())
   );
 
+  const descargarPDF = async () => {
+    try {
+      const pdfUrl = `${API_URL}/reporte-entradas`;
+      const fileUri = FileSystem.documentDirectory + 'reporte_entradas.pdf';
+
+      const downloadResumable = FileSystem.createDownloadResumable(
+        pdfUrl,
+        fileUri,
+        {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        }
+      );
+
+      const result = await downloadResumable.downloadAsync();
+
+      if (result && result.uri) {
+        console.log('📄 PDF descargado en:', result.uri);
+        await Sharing.shareAsync(result.uri);
+      } else {
+        console.warn('⚠️ La descarga no se completó correctamente.');
+      }
+    } catch (error) {
+      console.error('❌ Error al descargar PDF:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
-                <Ionicons name="menu" size={28} color="black" />
-            </TouchableOpacity>
-      <Text style={styles.title}>Entradas</Text>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.openDrawer()}>
+          <Ionicons name="menu" size={28} color="black" />
+        </TouchableOpacity>
+        <Text style={styles.title}>Entradas</Text>
+      </View>
 
       {/* Barra de búsqueda */}
       <TextInput
         style={styles.searchBar}
-        placeholder="Buscar por documento, almacen o usuario"
+        placeholder="Buscar por documento o almacen"
         value={search}
         onChangeText={setSearch}
       />
 
       {/*Botones*/}
       <View style={[styles.buttonContainer, isLandscape && styles.buttonContainerLandscape]}>
-      <TouchableOpacity style={styles.greenButton} onPress={() => setModalVisible(true)}>
+        <TouchableOpacity style={styles.greenButton} onPress={() => setModalVisible(true)}>
           <Text style={styles.buttonText}>Nueva Entrada</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.redButton}>
+        <TouchableOpacity style={styles.redButton} onPress={descargarPDF}>
           <Text style={styles.buttonText}>Descargar PDF</Text>
         </TouchableOpacity>
       </View>
@@ -95,32 +128,42 @@ const Entradas = ({ navigation }: any) => {
       {filteredEntradas.length === 0 ? (
         <Text style={styles.noDataText}>No se encontraron entradas</Text>
       ) : isLandscape ? (
-        <View style={styles.tableContainer}>
-          <View style={styles.tableHeader}>
-            <Text style={styles.tableHeaderText}>#</Text>
-            <Text style={styles.tableHeaderText}>Documento</Text>
-            <Text style={styles.tableHeaderText}>Almacen</Text>
-            <Text style={styles.tableHeaderText}>Usuario</Text>
-            <Text style={styles.tableHeaderText}>Fecha</Text>
-            <Text style={styles.tableHeaderText}>Acciones</Text>
-          </View>
-          <FlatList
-            data={filteredEntradas}
-            keyExtractor={(item) => item.id_entrada.toString()}
-            renderItem={({ item }) => (
-              <View style={styles.tableRow}>
+        <ScrollView style={styles.scrollContainer}>
+          <View style={styles.tableContainer}>
+            <View style={styles.tableHeader}>
+              <Text style={styles.tableHeaderText}>#</Text>
+              <Text style={styles.tableHeaderText}>Documento</Text>
+              <Text style={styles.tableHeaderText}>Almacen</Text>
+              <Text style={styles.tableHeaderText}>Usuario</Text>
+              <Text style={styles.tableHeaderText}>Fecha</Text>
+              <Text style={styles.tableHeaderText}>Acciones</Text>
+            </View>
+
+            {filteredEntradas.map((item) => (
+              <View key={item.id_entrada} style={styles.tableRow}>
                 <Text style={styles.tableCell}>{item.id_entrada}</Text>
-                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode='tail'>{item.documento}</Text>
-                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode='tail'>{item.almacen}</Text>
-                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode='tail'>{item.usuario}</Text>
-                <Text style={styles.tableCell}>{new Date(item.created_at).toLocaleDateString()}</Text>
-                <TouchableOpacity style={styles.blueButton} onPress={() => navigation.navigate('EntradaDetalles', { id: item.id_entrada })}>
+                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
+                  {item.documento}
+                </Text>
+                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
+                  {item.almacen}
+                </Text>
+                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
+                  {item.usuario}
+                </Text>
+                <Text style={styles.tableCell}>
+                  {new Date(item.created_at).toLocaleDateString()}
+                </Text>
+                <TouchableOpacity
+                  style={styles.blueButton}
+                  onPress={() => setDetalleDocumento(item.documento)}
+                >
                   <Text style={styles.buttonText}>Ver Detalles</Text>
                 </TouchableOpacity>
               </View>
-            )}
-          />
-        </View>
+            ))}
+          </View>
+        </ScrollView>
       ) : (
         <FlatList
           data={filteredEntradas}
@@ -131,24 +174,24 @@ const Entradas = ({ navigation }: any) => {
               <Text style={styles.cardText}>Almacen: {item.almacen}</Text>
               <Text style={styles.cardText}>Usuario: {item.usuario}</Text>
               <Text style={styles.cardDate}>Fecha: {new Date(item.created_at).toLocaleString()}</Text>
-              <TouchableOpacity style={styles.blueButton} onPress={() => navigation.navigate('EntradaDetalles', { id: item.id_entrada })}>
+              <TouchableOpacity
+                style={styles.blueButton}
+                onPress={() => setDetalleDocumento(item.documento)}
+              >
                 <Text style={styles.buttonText}>Ver Detalles</Text>
               </TouchableOpacity>
             </View>
           )}
         />
       )}
-
-      {/*Boton flotante */}
-      <View style={styles.floatingButtonsContainer} >
-        <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Salidas')}>
-          <Text style={styles.buttonText}>Salidas</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.floatingButton} onPress={() => navigation.navigate('Traslados')}>
-          <Text style={styles.buttonText}>Traslados</Text>
-        </TouchableOpacity>
-      </View>
-      <CrearEntrada visible={modalVisible} onClose={() => setModalVisible(false)} onSuccess={fetchEntradas}/>
+      <CrearEntrada visible={modalVisible} onClose={() => setModalVisible(false)} onSuccess={fetchEntradas} />
+      {detalleDocumento && (
+        <EntradaDetalle
+          visible={!!detalleDocumento}
+          onClose={() => setDetalleDocumento(null)}
+          documento={detalleDocumento}
+        />
+      )}
     </View >
   );
 };
@@ -158,13 +201,22 @@ export default Entradas
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: '#F5F7FA',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 40,
+    paddingBottom: 10,
     backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderColor: '#ddd',
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 16,
+    marginLeft: 16,
   },
   noDataText: {
     textAlign: 'center',
@@ -173,43 +225,33 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   card: {
+    backgroundColor: '#fff',
     padding: 16,
-    marginVertical: 8,
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
+    marginHorizontal: 10,
+    marginVertical: 6,
+    borderRadius: 10,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 4,
   },
   cardText: {
-    fontSize: 16,
-    color: 'gray',
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 2,
   },
   cardDate: {
-    fontSize: 14,
-    color: 'darkgray',
-    marginTop: 5,
-  },
-  floatingButtonsContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-evenly',
-    paddingHorizontal: 20,
-  },
-  floatingButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 30,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 5,
+    fontSize: 13,
+    color: '#999',
+    marginTop: 6,
+    marginBottom: 10,
   },
   buttonText: {
     color: '#fff',
@@ -217,35 +259,37 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   searchBar: {
-    height: 40,
+    marginHorizontal: 20,
+    marginTop: 10,
     backgroundColor: '#fff',
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    padding: 10,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#ccc',
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginVertical: 12,
+    marginHorizontal: 10,
   },
   buttonContainerLandscape: {
-    justifyContent: 'center', // Centra los botones en horizontal
+    justifyContent: 'space-around',
+    flexWrap: 'wrap',
   },
   greenButton: {
     backgroundColor: '#28a745',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 8,
-    marginHorizontal: 5,
+    borderRadius: 10,
+    elevation: 2,
   },
   redButton: {
     backgroundColor: '#dc3545',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 8,
-    marginHorizontal: 5,
+    borderRadius: 10,
+    elevation: 2,
   },
   blueButton: {
     backgroundColor: '#007bff',
@@ -254,36 +298,49 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  scrollContainer: {
+    flex: 1,
+    paddingHorizontal: 10,
+  },
   tableContainer: {
     marginTop: 10,
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#f1f1f1',
-    padding: 10,
-    borderRadius: 5,
+    backgroundColor: '#4287f5',
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderRadius: 6,
+    marginBottom: 4,
+    marginHorizontal: 4,
   },
   tableHeaderText: {
     flex: 1,
     fontWeight: 'bold',
+    fontSize: 14,
     textAlign: 'center',
+    color: '#fff',
   },
   tableRow: {
     flexDirection: 'row',
-    padding: 10,
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    marginHorizontal: 4,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderBottomColor: '#e9ecef',
+    borderRadius: 6,
   },
   tableCell: {
     flex: 1,
-    textAlign: 'justify',
-    padding: 10,
-    fontSize: 14,
+    fontSize: 13,
+    textAlign: 'center',
+    color: '#444',
   },
   menuButton: {
     position: 'absolute',
     top: 50,
     left: 20,
     zIndex: 10, // Asegura que esté por encima de otros elementos
-},
+  },
 });

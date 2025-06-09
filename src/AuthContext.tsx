@@ -8,6 +8,7 @@ interface User {
     name: string;
     email: string;
     rol: string;
+    almacen_id: number | null;
 }
 
 interface AuthContextType {

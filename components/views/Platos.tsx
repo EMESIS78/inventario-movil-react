@@ -38,6 +38,7 @@ const Platos = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const isLandscape = width > height; // Verifica si está en horizontal
     const numColumns = isLandscape ? 3 : 1;
+    const [platoExpandido, setPlatoExpandido] = useState<number | null>(null);
 
     if (!auth) {
         return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
@@ -70,14 +71,15 @@ const Platos = () => {
 
     return (
         <View style={styles.container}>
-            {/* Botón de menú hamburguesa */}
-            <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
-                <Ionicons name="menu" size={28} color="black" />
-            </TouchableOpacity>
+            {/* Menú hamburguesa */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                    <Ionicons name="menu" size={28} color="black" />
+                </TouchableOpacity>
+                <Text style={styles.title}>Lista de Platos</Text>
+            </View>
 
-            <Text style={styles.title}>Lista de Platos</Text>
-
-            {/* Campo de búsqueda */}
+            {/* Buscador */}
             <TextInput
                 style={styles.searchInput}
                 placeholder="Buscar plato..."
@@ -87,19 +89,18 @@ const Platos = () => {
 
             {/* Lista de platos */}
             {loading ? (
-                            <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
-                        ) : (
-            <FlatList
-                key={`flatlist-${numColumns}`}
-                data={platos.filter((plato) =>
-                    plato.nombre.toLowerCase().includes(search.toLowerCase())
-                )}
-                keyExtractor={(item) => item.id_plato.toString()}
-                numColumns={numColumns} // 1 columna en vertical, 2 en horizontal
-                contentContainerStyle={{ paddingBottom: 80 }}
-                renderItem={({ item }) => {
-                    return (
-                        <View style={[styles.card]}>
+                <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
+            ) : (
+                <FlatList
+                    key={`flatlist-${numColumns}`}
+                    data={platos.filter((plato) =>
+                        plato.nombre.toLowerCase().includes(search.toLowerCase())
+                    )}
+                    keyExtractor={(item) => item.id_plato.toString()}
+                    numColumns={numColumns}
+                    contentContainerStyle={{ paddingBottom: 80 }}
+                    renderItem={({ item }) => (
+                        <View style={styles.card}>
                             <Image
                                 source={{ uri: `http://192.168.0.86:3000/uploads/${item.imagen}` }}
                                 style={styles.productImage}
@@ -107,43 +108,68 @@ const Platos = () => {
                             />
                             <View style={styles.platoInfo}>
                                 <Text style={styles.platoNombre}>{item.nombre}</Text>
-                                <Text style={styles.platoDescripcion}>{item.descripcion}</Text>
+
+                                <Text
+                                    style={styles.platoDescripcion}
+                                    numberOfLines={platoExpandido === item.id_plato ? undefined : 2}
+                                    ellipsizeMode="tail"
+                                >
+                                    {item.descripcion}
+                                </Text>
+
+                                {item.descripcion.length > 80 && platoExpandido !== item.id_plato && (
+                                    <TouchableOpacity onPress={() => setPlatoExpandido(platoExpandido === item.id_plato ? null : item.id_plato)}>
+                                        <Text style={{ fontSize: 13, color: '#007bff', marginTop: 4 }}>
+                                            {platoExpandido === item.id_plato ? 'Mostrar menos' : `+ ${item.insumos.length - 2} más`}
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
+
                                 <Text style={styles.platoPrecio}>
-                                    Precio: €{typeof item.precio === 'string' ? parseFloat(item.precio).toFixed(2) : item.precio.toFixed(2)}
+                                    Precio: €{typeof item.precio === 'string'
+                                        ? parseFloat(item.precio).toFixed(2)
+                                        : item.precio.toFixed(2)}
                                 </Text>
                             </View>
 
                             <View style={styles.insumosContainer}>
-                                {item.insumos.map((insumo) => (
+                                {(platoExpandido === item.id_plato
+                                    ? item.insumos
+                                    : item.insumos.slice(0, 2)
+                                ).map((insumo) => (
                                     <View key={insumo.id_producto} style={styles.insumoInfo}>
                                         <Text style={styles.insumoNombre}>{insumo.nombre_producto}</Text>
                                         <Text style={styles.insumoCantidad}>Cantidad: {insumo.cantidad_requerida}</Text>
                                     </View>
                                 ))}
+
+                                {item.insumos.length > 2 && platoExpandido !== item.id_plato && (
+                                    <TouchableOpacity onPress={() => setPlatoExpandido(item.id_plato)}>
+                                        <Text style={{ fontSize: 13, color: '#007bff', marginTop: 4 }}>
+                                            + {item.insumos.length - 2} más
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
                             </View>
 
                             <View style={styles.buttonContainer}>
-                                {/* Botón de Editar */}
                                 <TouchableOpacity
                                     style={styles.editButton}
                                     onPress={() => setPlatoSeleccionado(item)}
                                 >
-                                    <Ionicons name="create-outline" size={24} color="white" />
+                                    <Ionicons name="create-outline" size={22} color="#fff" />
                                 </TouchableOpacity>
-                                {/* Botón de Eliminar */}
                                 <TouchableOpacity
                                     style={styles.deleteButton}
                                     onPress={() => setPlatoAEliminar(item)}
                                 >
-                                    <Ionicons name="trash-outline" size={24} color="white" />
+                                    <Ionicons name="trash-outline" size={22} color="#fff" />
                                 </TouchableOpacity>
                             </View>
                         </View>
-                    );
-                }}
-            />
-
-                        )}
+                    )}
+                />
+            )}
 
             {/* Modal para crear plato */}
             <CrearPlato
@@ -151,13 +177,14 @@ const Platos = () => {
                 onClose={() => setModalVisible(false)}
                 onCreated={() => {
                     setModalVisible(false);
-                    fetchPlatos(); // Refresca la lista
+                    fetchPlatos();
                 }}
             />
 
+            {/* Botón flotante */}
             {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
                 <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
-                    <Text style={styles.fabText}>+</Text>
+                    <Ionicons name="add" size={28} color="#fff" />
                 </TouchableOpacity>
             )}
         </View>
@@ -165,134 +192,131 @@ const Platos = () => {
 };
 
 const styles = StyleSheet.create({
-    loader: {
-        flex: 1,
-        justifyContent: 'center'
-    },
     container: {
         flex: 1,
         backgroundColor: '#F5F7FA',
-        padding: 20,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingTop: 40,
+        paddingBottom: 10,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderColor: '#ddd',
     },
     menuButton: {
         position: 'absolute',
         top: 50,
         left: 20,
-        zIndex: 10, // Asegura que esté por encima de otros elementos
-    },
-    card: {
-        backgroundColor: '#f2f2f2',
-        borderRadius: 12,
-        padding: 16,
-        marginBottom: 16,
-        elevation: 3
+        zIndex: 10,
     },
     title: {
-        fontSize: 24,
+        fontSize: 22,
         fontWeight: 'bold',
-        marginBottom: 10,
+        marginLeft: 16,
     },
     searchInput: {
+        marginHorizontal: 20,
+        marginTop: 10,
         backgroundColor: '#fff',
         padding: 10,
-        borderRadius: 8,
+        borderRadius: 10,
         borderWidth: 1,
         borderColor: '#ccc',
-        marginBottom: 10,
     },
-    description: {
-        marginTop: 4,
-        fontSize: 14,
-        color: '#444'
-    },
-    price: {
-        marginTop: 4,
-        fontWeight: '600'
-    },
-    subtitle: {
-        marginTop: 8,
-        fontWeight: 'bold'
-    },
-    insumo: {
-        marginLeft: 8,
-        fontSize: 14,
-        color: '#333'
-    },
-    platoInfo: {
+    card: {
         flex: 1,
-    },
-    platoNombre: {
-        width: '100%',
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    platoDescripcion: {
-        fontSize: 14,
-        color: 'gray',
-    },
-    platoPrecio: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: '#007bff',
-        marginTop: 5,
-    },
-    insumosContainer: {
-        marginTop: 10,
-        padding: 10,
-        backgroundColor: '#e9ecef',
-        borderRadius: 8,
-    },
-    insumoInfo: {
-        marginBottom: 8,
-    },
-    insumoNombre: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    insumoCantidad: {
-        fontSize: 14,
-        color: 'gray',
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginTop: 10,
-    },
-    editButton: {
-        backgroundColor: '#007AFF',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginRight: 5,
-    },
-    deleteButton: {
-        backgroundColor: '#DC3545',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-    },
-    fab: {
-        position: 'absolute',
-        right: 20,
-        bottom: 20,
-        backgroundColor: '#007bff',
-        width: 56,
-        height: 56,
-        borderRadius: 28,
-        justifyContent: 'center',
-        alignItems: 'center',
-        elevation: 5,
-    },
-    fabText: {
-        color: '#fff',
-        fontSize: 24,
-        fontWeight: 'bold',
+        backgroundColor: '#fff',
+        margin: 8,
+        padding: 16,
+        borderRadius: 10,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
     },
     productImage: {
         width: '100%',
         height: 150,
-        borderRadius: 8,
+        borderRadius: 10,
         marginBottom: 10,
+    },
+    platoInfo: {
+        marginBottom: 8,
+    },
+    platoNombre: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    platoDescripcion: {
+        fontSize: 14,
+        height: 40,
+        color: '#555',
+    },
+    platoPrecio: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#007bff',
+        marginTop: 5,
+    },
+    insumosContainer: {
+        backgroundColor: '#f1f3f5',
+        padding: 10,
+        borderRadius: 8,
+        marginTop: 10,
+    },
+    insumoInfo: {
+        marginBottom: 6,
+    },
+    insumoNombre: {
+        fontSize: 15,
+        fontWeight: '500',
+        color: '#444',
+    },
+    insumoCantidad: {
+        fontSize: 14,
+        color: '#666',
+    },
+    buttonContainer: {
+        flexDirection: 'row',
+        marginTop: 10,
+        justifyContent: 'space-between',
+    },
+    editButton: {
+        backgroundColor: '#007bff',
+        padding: 10,
+        borderRadius: 8,
+        flex: 1,
+        marginRight: 5,
+        alignItems: 'center',
+    },
+    deleteButton: {
+        backgroundColor: '#dc3545',
+        padding: 10,
+        borderRadius: 8,
+        flex: 1,
+        marginLeft: 5,
+        alignItems: 'center',
+    },
+    fab: {
+        position: 'absolute',
+        bottom: 30,
+        right: 30,
+        backgroundColor: '#007bff',
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        justifyContent: 'center',
+        alignItems: 'center',
+        elevation: 6,
+        shadowColor: '#000',
+        shadowOpacity: 0.2,
+        shadowOffset: { width: 0, height: 3 },
+        shadowRadius: 4,
     },
 });
 

@@ -131,7 +131,6 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
                     )}
                     <TextInput style={styles.input} placeholder="Ubicación" value={ubicacion} onChangeText={setUbicacion} />
 
-
                     {/* Botones de acción */}
                     <View style={[
                         styles.buttonContainer,

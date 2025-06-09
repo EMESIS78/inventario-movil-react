@@ -4,7 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 import { AuthContext } from '../../src/AuthContext';
 import { StackNavigationProp } from '@react-navigation/stack';
 
-// Definir las rutas posibles
 type RootStackParamList = {
   Login: undefined;
   Home: undefined;

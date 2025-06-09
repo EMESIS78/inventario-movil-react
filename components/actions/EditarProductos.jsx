@@ -20,19 +20,6 @@ const EditarProducto = ({ visible, producto, onClose, onProductUpdated }) => {
     const [alertTitle, setAlertTitle] = useState(''); // Título de la alerta
     const [alertMessage, setAlertMessage] = useState('');
 
-    const pickImage = async () => {
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [4, 4],
-            quality: 1,
-        });
-
-        if (!result.canceled) {
-            setImagen(result.assets[0].uri);
-        }
-    };
-
     const showCustomAlert = (title, message) => {
         setAlertTitle(title);
         setAlertMessage(message);
@@ -90,7 +77,7 @@ const EditarProducto = ({ visible, producto, onClose, onProductUpdated }) => {
                     <TextInput style={styles.input} value={marca} onChangeText={setMarca} placeholder="Ingrese la marca del producto" />
 
                     <Text style={styles.label}>Unidad de Medida:</Text>
-                    {/* Dropdown personalizado debajo de Marca */}
+
                     <TouchableOpacity style={styles.dropdown} onPress={() => setDropdownVisible(true)}>
                         <Text style={styles.dropdownText}>{unidad}</Text>
                         <Ionicons name="chevron-down" size={20} color="#333" />
@@ -113,14 +100,13 @@ const EditarProducto = ({ visible, producto, onClose, onProductUpdated }) => {
                     <TextInput style={styles.input} value={ubicacion} onChangeText={setUbicacion} placeholder="Ubicación en el almacén" />
 
                     {/* Imagen actual */}
-                    {producto?.imagen && (
+                    {/* {producto?.imagen && (
                         <Image source={{ uri: `http://192.168.0.86:3000/uploads/${producto.imagen}` }} style={styles.image} />
-                    )}
+                    )} */}
 
-                    {/* Seleccionar nueva imagen */}
-                    <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
+                    {/* <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
                         <Text style={styles.imageButtonText}>Seleccionar Imagen</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
 
                     {/* Botón de actualizar */}
                     <TouchableOpacity style={styles.saveButton} onPress={handleActualizar}>
@@ -133,7 +119,7 @@ const EditarProducto = ({ visible, producto, onClose, onProductUpdated }) => {
                     </TouchableOpacity>
                 </View>
             </View>
-            {/* Alerta personalizada */}
+
             <Alert
                 visible={alertVisible}
                 title={alertTitle}
