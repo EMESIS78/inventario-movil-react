@@ -13,7 +13,6 @@ import Usuarios from '../components/views/Usuarios';
 import Salidas from '../components/views/Salidas';
 import Entradas from '../components/views/Entradas';
 import Proveedores from '../components/views/Proveedores';
-import Traslados from '../components/views/Traslados';
 import { View, useWindowDimensions, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -81,7 +80,6 @@ const App = () => {
         </AuthProvider>
     );
 }
-
 
 const styles = StyleSheet.create({
     container: {
