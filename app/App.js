@@ -12,6 +12,7 @@ import Almacenes from '../components/views/Almacenes';
 import Usuarios from '../components/views/Usuarios';
 import Salidas from '../components/views/Salidas';
 import Entradas from '../components/views/Entradas';
+import Proveedores from '../components/views/Proveedores';
 import Traslados from '../components/views/Traslados';
 import { View, useWindowDimensions, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -31,7 +32,7 @@ const DrawerNavigator = () => {
                 <Drawer.Screen name="Establecimientos" component={Almacenes} />
                 <Drawer.Screen name="Salidas" component={Salidas} />
                 <Drawer.Screen name="Entradas" component={Entradas} />
-                {/* <Drawer.Screen name="Traslados" component={Traslados} /> */}
+                <Drawer.Screen name="Proveedores" component={Proveedores} />
                 <Drawer.Screen name="Usuarios" component={Usuarios} />
             </Drawer.Navigator>
         </SafeAreaView>

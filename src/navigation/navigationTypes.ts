@@ -9,7 +9,7 @@ export type RootStackParamList = {
   Usuarios: undefined;
   Salidas: undefined;
   Entradas: undefined;
-  // Traslados: undefined;
+  Proveedores: undefined;
 
   // Agrega más pantallas si es necesario
 };
@@ -22,7 +22,7 @@ export type RootDrawerParamList = {
   Usuarios: undefined;
   Salidas: undefined;
   Entradas: undefined;
-  // Traslados: undefined;
+  Proveedores: undefined;
   // Agrega más opciones del Drawer
 };
 
