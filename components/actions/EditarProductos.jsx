@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet, Image, FlatList } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet, Image, FlatList, ScrollView } from 'react-native';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import { API_URL } from '@env';
@@ -63,167 +63,164 @@ const EditarProducto = ({ visible, producto, onClose, onProductUpdated }) => {
     };
 
     return (
-        <Modal visible={visible} animationType="slide" transparent>
-            <View style={styles.modalContainer}>
-                <View style={styles.modalContent}>
+        <Modal
+            visible={visible}
+            animationType="slide"
+            presentationStyle="formSheet"
+            statusBarTranslucent
+        >
+            <View style={{ flex: 1 }}>
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
                     <Text style={styles.title}>Editar Producto</Text>
-                    <Text style={styles.label}>Código:</Text>
-                    <TextInput style={styles.input} value={codigo} onChangeText={setCodigo} placeholder="Ingrese el código del producto" />
 
-                    <Text style={styles.label}>Nombre:</Text>
-                    <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder="Ingrese el nombre del producto" />
+                    <Text style={styles.label}>Código</Text>
+                    <TextInput style={styles.input} value={codigo} onChangeText={setCodigo} placeholder="Ingrese código del producto" />
 
-                    <Text style={styles.label}>Marca:</Text>
-                    <TextInput style={styles.input} value={marca} onChangeText={setMarca} placeholder="Ingrese la marca del producto" />
+                    <Text style={styles.label}>Nombre</Text>
+                    <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder="Ingrese nombre del producto" />
 
-                    <Text style={styles.label}>Unidad de Medida:</Text>
+                    <Text style={styles.label}>Marca</Text>
+                    <TextInput style={styles.input} value={marca} onChangeText={setMarca} placeholder="Ingrese la marca" />
 
-                    <TouchableOpacity style={styles.dropdown} onPress={() => setDropdownVisible(true)}>
+                    <Text style={styles.label}>Unidad de Medida</Text>
+                    <TouchableOpacity style={styles.dropdown} onPress={() => setDropdownVisible(!dropdownVisible)}>
                         <Text style={styles.dropdownText}>{unidad}</Text>
-                        <Ionicons name="chevron-down" size={20} color="#333" />
+                        <Ionicons name="chevron-down" size={20} color="#374151" />
                     </TouchableOpacity>
                     {dropdownVisible && (
-                        <View style={styles.dropdownList}>
-                            <FlatList
-                                data={unidades}
-                                keyExtractor={(item) => item}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity style={styles.dropdownItem} onPress={() => { setUnidad(item); setDropdownVisible(false); }}>
-                                        <Text>{item}</Text>
+                        <View style={styles.dropdownWrapper}>
+                            <ScrollView style={styles.dropdownList} nestedScrollEnabled={true}>
+                                {unidades.map((item) => (
+                                    <TouchableOpacity
+                                        key={item}
+                                        style={styles.dropdownItem}
+                                        onPress={() => {
+                                            setUnidad(item);
+                                            setDropdownVisible(false);
+                                        }}
+                                    >
+                                        <Text style={styles.dropdownItemText}>{item}</Text>
                                     </TouchableOpacity>
-                                )}
-                            />
+                                ))}
+                            </ScrollView>
                         </View>
                     )}
 
-                    <Text style={styles.label}>Ubicación:</Text>
-                    <TextInput style={styles.input} value={ubicacion} onChangeText={setUbicacion} placeholder="Ubicación en el almacén" />
+                    <Text style={styles.label}>Ubicación</Text>
+                    <TextInput style={styles.input} value={ubicacion} onChangeText={setUbicacion} placeholder="Ubicación en almacén" />
 
-                    {/* Imagen actual */}
-                    {/* {producto?.imagen && (
-                        <Image source={{ uri: `http://192.168.0.86:3000/uploads/${producto.imagen}` }} style={styles.image} />
-                    )} */}
-
-                    {/* <TouchableOpacity style={styles.imageButton} onPress={pickImage}>
-                        <Text style={styles.imageButtonText}>Seleccionar Imagen</Text>
-                    </TouchableOpacity> */}
-
-                    {/* Botón de actualizar */}
                     <TouchableOpacity style={styles.saveButton} onPress={handleActualizar}>
                         <Text style={styles.saveButtonText}>Actualizar</Text>
                     </TouchableOpacity>
 
-                    {/* Botón de cerrar */}
                     <TouchableOpacity style={styles.closeButton} onPress={onClose}>
                         <Text style={styles.closeButtonText}>Cerrar</Text>
                     </TouchableOpacity>
-                </View>
+                </ScrollView>
             </View>
 
-            <Alert
-                visible={alertVisible}
-                title={alertTitle}
-                message={alertMessage}
-                onClose={closeAlert} />
+            <Alert visible={alertVisible} title={alertTitle} message={alertMessage} onClose={closeAlert} />
         </Modal>
     );
 };
 
 const styles = StyleSheet.create({
-    modalContainer: {
+    fullscreen: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)'
+        backgroundColor: '#fff',
     },
-    modalContent: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        width: '80%',
-        alignItems: 'center',
+    scrollContainer: {
+        padding: 30,
+        backgroundColor: '#fff',
     },
     title: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center'
-    },
-    input: {
-        width: '100%',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        padding: 10,
-        marginBottom: 10,
-    },
-    image: {
-        width: 100,
-        height: 100,
-        alignSelf: 'center',
-        marginVertical: 10
-    },
-    imageButton: {
-        backgroundColor: 'gray',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center'
-    },
-    imageButtonText: {
-        color: 'white',
-        fontWeight: 'bold',
-    },
-    saveButton: {
-        backgroundColor: 'green',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginBottom: 10
-    },
-    saveButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    closeButton: {
-        backgroundColor: 'red',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        width: '100%',
-    },
-    closeButtonText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: 'bold',
+        color: '#1f2937',
+        marginBottom: 20,
+        textAlign: 'center',
+        marginTop: 30,
     },
     label: {
-        alignSelf: 'flex-start',
         fontSize: 16,
         fontWeight: '600',
-        marginBottom: 5,
-        marginTop: 10,
+        color: '#374151',
+        marginBottom: 6,
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        borderRadius: 10,
+        padding: 12,
+        marginBottom: 12,
+        fontSize: 15,
+        color: '#111827',
+    },
+    dropdownWrapper: {
+        maxHeight: 180,
+        width: '100%',
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        marginTop: -5,
+        marginBottom: 10,
+        elevation: 5,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        zIndex: 999,
     },
     dropdown: {
-        width: '100%',
-        padding: 10,
         borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
+        borderColor: '#d1d5db',
+        borderRadius: 10,
+        padding: 12,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 12,
+    },
+    dropdownText: {
+        fontSize: 15,
+        color: '#111827',
     },
     dropdownList: {
-        width: '100%',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        backgroundColor: 'white',
-        position: 'absolute',
-        top: 180,
-        zIndex: 10,
+        paddingVertical: 4,
+    },
+    dropdownItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
+    },
+    dropdownItemText: {
+        fontSize: 15,
+        color: '#1f2937',
+    },
+    saveButton: {
+        backgroundColor: '#2563eb',
+        paddingVertical: 12,
+        borderRadius: 10,
+        alignItems: 'center',
+        marginBottom: 10,
+    },
+    saveButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
+    },
+    closeButton: {
+        backgroundColor: '#ef4444',
+        paddingVertical: 12,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    closeButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     },
 });
 

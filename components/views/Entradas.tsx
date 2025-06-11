@@ -102,9 +102,10 @@ const Entradas = ({ navigation }: any) => {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.openDrawer()}>
-          <Ionicons name="menu" size={28} color="black" />
+          <Ionicons name="menu-outline" size={28} color="#1f2937" />
         </TouchableOpacity>
-        <Text style={styles.title}>Entradas</Text>
+        <Text style={styles.headerTitle}>Entradas de Insumos</Text>
+        <View style={{ width: 28 }} />
       </View>
 
       {/* Barra de búsqueda */}
@@ -118,9 +119,12 @@ const Entradas = ({ navigation }: any) => {
       {/*Botones*/}
       <View style={[styles.buttonContainer, isLandscape && styles.buttonContainerLandscape]}>
         <TouchableOpacity style={styles.greenButton} onPress={() => setModalVisible(true)}>
+          <Ionicons name="add-circle-outline" size={20} color="#fff" />
           <Text style={styles.buttonText}>Nueva Entrada</Text>
         </TouchableOpacity>
+
         <TouchableOpacity style={styles.redButton} onPress={descargarPDF}>
+          <Ionicons name="download-outline" size={20} color="#fff" />
           <Text style={styles.buttonText}>Descargar PDF</Text>
         </TouchableOpacity>
       </View>
@@ -170,14 +174,15 @@ const Entradas = ({ navigation }: any) => {
           keyExtractor={(item) => item.id_entrada.toString()}
           renderItem={({ item }) => (
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Documento: {item.documento}</Text>
-              <Text style={styles.cardText}>Almacen: {item.almacen}</Text>
-              <Text style={styles.cardText}>Usuario: {item.usuario}</Text>
-              <Text style={styles.cardDate}>Fecha: {new Date(item.created_at).toLocaleString()}</Text>
+              <Text style={styles.cardTitle}>📝 Documento: {item.documento}</Text>
+              <Text style={styles.cardText}>🏪 Almacén: {item.almacen}</Text>
+              <Text style={styles.cardText}>👤 Usuario: {item.usuario}</Text>
+              <Text style={styles.cardDate}>📅 Fecha: {new Date(item.created_at).toLocaleString()}</Text>
               <TouchableOpacity
                 style={styles.blueButton}
                 onPress={() => setDetalleDocumento(item.documento)}
               >
+                <Ionicons name="eye-outline" size={20} color="#fff" />
                 <Text style={styles.buttonText}>Ver Detalles</Text>
               </TouchableOpacity>
             </View>
@@ -206,17 +211,19 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 40,
     paddingBottom: 10,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#e5e7eb',
+    elevation: 3,
   },
-  title: {
-    fontSize: 22,
+  headerTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    marginLeft: 16,
+    color: '#111827',
   },
   noDataText: {
     textAlign: 'center',
@@ -226,37 +233,35 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: '#fff',
+    borderRadius: 16,
     padding: 16,
+    marginVertical: 8,
     marginHorizontal: 10,
-    marginVertical: 6,
-    borderRadius: 10,
-    elevation: 3,
     shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    shadowRadius: 6,
+    elevation: 4,
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#1f2937',
     marginBottom: 4,
   },
   cardText: {
     fontSize: 14,
-    color: '#666',
-    marginBottom: 2,
+    color: '#4b5563',
   },
   cardDate: {
     fontSize: 13,
-    color: '#999',
-    marginTop: 6,
-    marginBottom: 10,
+    color: '#9ca3af',
+    marginVertical: 6,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
     fontWeight: 'bold',
+    marginLeft: 6,
   },
   searchBar: {
     marginHorizontal: 20,
@@ -278,25 +283,32 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   greenButton: {
-    backgroundColor: '#28a745',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#22c55e',
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     borderRadius: 10,
     elevation: 2,
+    marginRight: 6,
   },
   redButton: {
-    backgroundColor: '#dc3545',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ef4444',
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     borderRadius: 10,
     elevation: 2,
   },
   blueButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 8,
+    flexDirection: 'row',
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#3b82f6',
+    paddingVertical: 8,
+    borderRadius: 10,
+    marginTop: 10,
   },
   scrollContainer: {
     flex: 1,
@@ -336,11 +348,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     textAlign: 'center',
     color: '#444',
-  },
-  menuButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    zIndex: 10, // Asegura que esté por encima de otros elementos
   },
 });

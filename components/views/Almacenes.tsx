@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+    View, Text, FlatList, TouchableOpacity, StyleSheet, Platform,
+    StatusBar, Animated
+} from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
-import { AuthContext } from '../../src/AuthContext';
+import { AuthContext } from '@/src/AuthContext';
 import axios from 'axios';
 import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,87 +21,101 @@ const Almacenes = () => {
     const navigation = useNavigation<DrawerNavProp>();
     const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
 
-    if (!auth) {
-        return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
-    }
-
     const fetchAlmacenes = useCallback(async () => {
         try {
             const response = await axios.get(`${API_URL}/almacenes`);
             setAlmacenes(response.data);
-            console.log('✅ Almacenes actualizados');
         } catch (error) {
             console.error('❌ Error al obtener almacenes:', error);
         }
     }, []);
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchAlmacenes();
-        }, [fetchAlmacenes])
-    );
+    useFocusEffect(useCallback(() => {
+        fetchAlmacenes();
+    }, [fetchAlmacenes]));
+
+    if (!auth) {
+        return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
+    }
 
     return (
         <View style={styles.container}>
-            {/* Botón de menú hamburguesa */}
-            <TouchableOpacity style={styles.menuButton} onPress={() => navigation.openDrawer()}>
-                <Ionicons name="menu" size={28} color="black" />
-            </TouchableOpacity>
+            <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-            <Text style={styles.title}>Almacenes</Text>
+            {/* Header */}
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.openDrawer()}>
+                    <Ionicons name="menu-outline" size={28} color="#333" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Almacenes</Text>
+                <View style={{ width: 28 }} /> {/* Espacio para balancear el ícono del menú */}
+            </View>
 
             {/* Lista de almacenes */}
             <FlatList
                 data={almacenes}
                 keyExtractor={(item) => item.id.toString()}
+                contentContainerStyle={styles.list}
                 renderItem={({ item }) => (
-                    <View style={styles.card}>
-                        <Text style={styles.cardTitle}>{item.nombre}</Text>
-                        <Text style={styles.cardText}>{item.ubicacion}</Text>
-                    </View>
+                    <TouchableOpacity activeOpacity={0.8}>
+                        <View style={styles.card}>
+                            <Ionicons name="business-outline" size={28} color="#2563eb" style={{ marginBottom: 8 }} />
+                            <Text style={styles.cardTitle}>{item.nombre}</Text>
+                            <Text style={styles.cardText}>{item.ubicacion}</Text>
+                        </View>
+                    </TouchableOpacity>
                 )}
             />
         </View>
     );
 };
 
+export default Almacenes;
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 16,
-        backgroundColor: '#f9f9f9',
+        backgroundColor: '#f1f5f9',
+        paddingTop: Platform.OS === 'android' ? 0 : 0,
     },
-    menuButton: {
-        position: 'absolute',
-        top: 10,
-        left: 10,
-        zIndex: 10,
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 20,
+        backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
+        elevation: 3,
     },
-    title: {
-        fontSize: 24,
+    headerTitle: {
+        fontSize: 20,
         fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
+        color: '#111827',
+    },
+    list: {
+        padding: 16,
     },
     card: {
-        backgroundColor: 'white',
-        padding: 16,
-        marginVertical: 8,
-        borderRadius: 8,
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 16,
+        alignItems: 'flex-start',
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
+        shadowRadius: 6,
+        elevation: 5,
     },
     cardTitle: {
         fontSize: 18,
         fontWeight: 'bold',
+        color: '#1f2937',
+        marginBottom: 4,
     },
     cardText: {
         fontSize: 14,
-        color: '#555',
+        color: '#6b7280',
     },
 });
-
-export default Almacenes;

@@ -109,28 +109,29 @@ const Productos = () => {
     );
 
     useEffect(() => {
-    if (authLoading) return;
+        if (authLoading) return;
 
-    const idAlmacen = user?.rol === 'admin'
-        ? selectedAlmacen?.id
-        : user?.almacen_id;
+        const idAlmacen = user?.rol === 'admin'
+            ? selectedAlmacen?.id
+            : user?.almacen_id;
 
-    if (!idAlmacen || productosBase.length === 0) {
-        setLoading(false); // detener el loader visible
-        return;
-    }
+        if (!idAlmacen || productosBase.length === 0) {
+            setLoading(false); // detener el loader visible
+            return;
+        }
 
-    fetchInventario();
-}, [selectedAlmacen, productosBase, user, authLoading]);
+        fetchInventario();
+    }, [selectedAlmacen, productosBase, user, authLoading]);
 
     return (
         <View style={styles.container}>
             {/* Botón de menú hamburguesa */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.openDrawer()}>
-                    <Ionicons name="menu" size={28} color="black" />
+                    <Ionicons name="menu-outline" size={28} color="#1f2937" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Lista de Insumos</Text>
+                <View style={{ width: 28 }} />
             </View>
 
             {/* Dropdown para seleccionar almacén */}
@@ -245,27 +246,32 @@ const styles = StyleSheet.create({
     },
     header: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingTop: 40,
-        paddingBottom: 10,
+        paddingBottom: 12,
         backgroundColor: '#fff',
         borderBottomWidth: 1,
-        borderColor: '#ddd',
+        borderColor: '#e5e7eb',
+        elevation: 3,
     },
     title: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginLeft: 16,
+        color: '#111827',
     },
     searchInput: {
         marginHorizontal: 20,
         marginTop: 10,
         backgroundColor: '#fff',
-        padding: 10,
-        borderRadius: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#d1d5db',
+        fontSize: 15,
+        color: '#111827',
     },
     loader: {
         marginTop: 40,
@@ -277,26 +283,29 @@ const styles = StyleSheet.create({
     card: {
         flex: 1,
         backgroundColor: '#fff',
-        margin: 8,
+        marginHorizontal: 10,
+        marginVertical: 6,
         padding: 16,
-        borderRadius: 10,
+        borderRadius: 16,
         elevation: 3,
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
+        shadowRadius: 6,
     },
     cardContent: {
         gap: 4,
     },
     productName: {
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#1f2937',
+        marginBottom: 2,
     },
     productDescription: {
         fontSize: 14,
-        color: '#555',
+        color: '#6b7280',
+        marginBottom: 2,
     },
     productPrice: {
         fontSize: 14,
@@ -304,7 +313,8 @@ const styles = StyleSheet.create({
     },
     productStock: {
         fontSize: 14,
-        color: '#28a745',
+        color: '#16a34a',
+        fontWeight: '600',
     },
     buttonContainer: {
         flexDirection: 'row',
@@ -312,26 +322,30 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     editButton: {
-        backgroundColor: '#007bff',
+        backgroundColor: '#3b82f6',
         padding: 10,
-        borderRadius: 8,
+        borderRadius: 10,
         flex: 1,
         marginRight: 5,
         alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
     },
     deleteButton: {
-        backgroundColor: '#dc3545',
+        backgroundColor: '#ef4444',
         padding: 10,
-        borderRadius: 8,
+        borderRadius: 10,
         flex: 1,
         marginLeft: 5,
         alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
     },
     fab: {
         position: 'absolute',
         bottom: 30,
         right: 30,
-        backgroundColor: '#007bff',
+        backgroundColor: '#3b82f6',
         width: 60,
         height: 60,
         borderRadius: 30,

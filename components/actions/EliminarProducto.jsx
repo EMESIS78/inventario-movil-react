@@ -35,7 +35,7 @@ const EliminarProducto = ({ visible, producto, onClose, onProductDeleted }) => {
     };
 
     return (
-        <Modal visible={visible} transparent animationType="slide">
+        <Modal visible={visible} transparent animationType="fade">
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Eliminar Producto</Text>

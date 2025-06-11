@@ -1,10 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
-import { AuthContext } from '../../src/AuthContext'; // Asegúrate de que la ruta sea correcta
+import React, { useContext } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView, useWindowDimensions } from 'react-native';
+import { AuthContext } from '../../src/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
-import { useWindowDimensions } from 'react-native';
 
 const COLORS = {
   background: '#F9FAFB',
@@ -26,34 +25,33 @@ const menuItems = [
   { name: 'Establecimientos', icon: 'warehouse', roles: ['admin', 'supervisor', 'usuario'], route: 'Establecimientos' },
   { name: 'Usuarios', icon: 'people', roles: ['admin'], route: 'Usuarios' },
   { name: 'Proveedores', icon: 'business', roles: ['admin'], route: 'Proveedores' },
-  { name: 'Reportes', icon: 'assessment', roles: ['admin', 'supervisor'], route: 'Reportes' },
 ];
 
 const HomeScreen = () => {
   const navigation = useNavigation<DrawerNavProp>();
   const auth = useContext(AuthContext);
   const { width, height } = useWindowDimensions();
-  const isLandscape = width > height; // Ahora detecta la orientación correctamente
+  const isLandscape = width > height;
 
   if (!auth) return <Text>Error: AuthContext no disponible</Text>;
 
   const { user, logout } = auth;
   const filteredMenu = menuItems.filter(item => item.roles.includes(user?.rol || ''));
-  const cardSize = isLandscape ? width / 4.5 : width / 2.5;
+  const cardSize = isLandscape ? width / 4.5 : width / 2.2;
 
   return (
-    <View style={[styles.container, isLandscape && styles.containerLandscape]}>
-      <Text style={styles.title}>Bienvenido, {user?.name || 'Usuario'}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Hola, {user?.name || 'Usuario'}</Text>
       <Text style={styles.subtitle}>Rol: {user?.rol || 'Sin rol'}</Text>
 
-      <ScrollView contentContainerStyle={[styles.menuContainer, isLandscape && styles.menuContainerLandscape,]}>
+      <ScrollView contentContainerStyle={styles.menuGrid}>
         {filteredMenu.map((item) => (
           <Pressable
             key={item.route}
             style={[styles.card, { width: cardSize, height: cardSize }]}
             onPress={() => navigation.navigate(item.route as never)}
           >
-            <MaterialIcons name={item.icon as never} size={40} color={COLORS.primary} />
+            <MaterialIcons name={item.icon as never} size={40} color={COLORS.accent} />
             <Text style={styles.cardText}>{item.name}</Text>
           </Pressable>
         ))}
@@ -79,11 +77,6 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingHorizontal: 16,
   },
-  containerLandscape: {
-    flexDirection: 'column', // Mantiene los elementos en columna
-    alignItems: 'center',
-    paddingHorizontal: 20,
-  },
   title: {
     fontSize: 22,
     fontWeight: '700',
@@ -97,14 +90,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  menuContainer: {
+  menuGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
     paddingBottom: 60,
-  },
-  menuContainerLandscape: {
-    justifyContent: 'space-evenly',
   },
   card: {
     backgroundColor: COLORS.white,

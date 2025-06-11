@@ -71,12 +71,12 @@ const Platos = () => {
 
     return (
         <View style={styles.container}>
-            {/* Menú hamburguesa */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.openDrawer()}>
-                    <Ionicons name="menu" size={28} color="black" />
+                    <Ionicons name="menu-outline" size={28} color="#1f2937" />
                 </TouchableOpacity>
                 <Text style={styles.title}>Lista de Platos</Text>
+                <View style={{ width: 28 }} />
             </View>
 
             {/* Buscador */}
@@ -119,7 +119,7 @@ const Platos = () => {
 
                                 {item.descripcion.length > 80 && platoExpandido !== item.id_plato && (
                                     <TouchableOpacity onPress={() => setPlatoExpandido(platoExpandido === item.id_plato ? null : item.id_plato)}>
-                                        <Text style={{ fontSize: 13, color: '#007bff', marginTop: 4 }}>
+                                        <Text style={{ fontSize: 13, color: '#3b82f6', marginTop: 6, fontWeight: 'bold' }}>
                                             {platoExpandido === item.id_plato ? 'Mostrar menos' : `+ ${item.insumos.length - 2} más`}
                                         </Text>
                                     </TouchableOpacity>
@@ -198,13 +198,15 @@ const styles = StyleSheet.create({
     },
     header: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 20,
         paddingTop: 40,
         paddingBottom: 10,
         backgroundColor: '#fff',
         borderBottomWidth: 1,
-        borderColor: '#ddd',
+        borderColor: '#e5e7eb',
+        elevation: 3,
     },
     menuButton: {
         position: 'absolute',
@@ -213,100 +215,109 @@ const styles = StyleSheet.create({
         zIndex: 10,
     },
     title: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
-        marginLeft: 16,
+        color: '#111827',
     },
     searchInput: {
         marginHorizontal: 20,
         marginTop: 10,
         backgroundColor: '#fff',
-        padding: 10,
-        borderRadius: 10,
+        paddingVertical: 10,
+        paddingHorizontal: 16,
+        borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#ccc',
+        borderColor: '#d1d5db',
+        fontSize: 15,
+        color: '#111827',
     },
     card: {
         flex: 1,
         backgroundColor: '#fff',
-        margin: 8,
+        marginHorizontal: 10,
+        marginVertical: 6,
         padding: 16,
-        borderRadius: 10,
+        borderRadius: 16,
         elevation: 3,
         shadowColor: '#000',
         shadowOpacity: 0.1,
         shadowOffset: { width: 0, height: 2 },
-        shadowRadius: 4,
+        shadowRadius: 6,
     },
     productImage: {
         width: '100%',
-        height: 150,
-        borderRadius: 10,
+        height: 160,
+        borderRadius: 14,
         marginBottom: 10,
     },
     platoInfo: {
         marginBottom: 8,
     },
     platoNombre: {
-        fontSize: 16,
+        fontSize: 17,
         fontWeight: 'bold',
-        color: '#333',
+        color: '#1f2937',
+        marginBottom: 2,
     },
     platoDescripcion: {
         fontSize: 14,
-        height: 40,
-        color: '#555',
+        color: '#4b5563',
+        lineHeight: 18,
     },
     platoPrecio: {
         fontSize: 16,
-        fontWeight: '600',
-        color: '#007bff',
-        marginTop: 5,
+        fontWeight: 'bold',
+        color: '#22c55e',
+        marginTop: 6,
     },
     insumosContainer: {
-        backgroundColor: '#f1f3f5',
+        backgroundColor: '#f9fafb',
         padding: 10,
-        borderRadius: 8,
+        borderRadius: 10,
         marginTop: 10,
     },
     insumoInfo: {
         marginBottom: 6,
     },
     insumoNombre: {
-        fontSize: 15,
-        fontWeight: '500',
-        color: '#444',
+        fontSize: 14,
+        fontWeight: '600',
+        color: '#374151',
     },
     insumoCantidad: {
-        fontSize: 14,
-        color: '#666',
+        fontSize: 13,
+        color: '#6b7280',
     },
     buttonContainer: {
         flexDirection: 'row',
-        marginTop: 10,
         justifyContent: 'space-between',
+        marginTop: 12,
     },
     editButton: {
-        backgroundColor: '#007bff',
+        backgroundColor: '#3b82f6',
         padding: 10,
-        borderRadius: 8,
+        borderRadius: 10,
         flex: 1,
         marginRight: 5,
         alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
     },
     deleteButton: {
-        backgroundColor: '#dc3545',
+        backgroundColor: '#ef4444',
         padding: 10,
-        borderRadius: 8,
+        borderRadius: 10,
         flex: 1,
         marginLeft: 5,
         alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'center',
     },
     fab: {
         position: 'absolute',
         bottom: 30,
         right: 30,
-        backgroundColor: '#007bff',
+        backgroundColor: '#3b82f6',
         width: 60,
         height: 60,
         borderRadius: 30,

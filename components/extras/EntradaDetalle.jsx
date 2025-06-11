@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, ActivityIndicator, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
+import {
+    Modal,
+    View,
+    Text,
+    ActivityIndicator,
+    TouchableOpacity,
+    StyleSheet,
+    ScrollView,
+    Dimensions,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { API_URL } from '@env';
@@ -27,62 +36,129 @@ const EntradaDetalle = ({ visible, onClose, documento }) => {
     };
 
     return (
-        <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={onClose}>
-                    <Ionicons name="arrow-back" size={28} color="black" />
-                </TouchableOpacity>
-                <Text style={styles.title}>Detalle de Entrada</Text>
-            </View>
+        <Modal visible={visible} animationType="slide" statusBarTranslucent>
+            <View style={styles.container}>
+                {/* Encabezado */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={onClose}>
+                        <Ionicons name="arrow-back" size={24} color="#fff" />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Detalle de Entrada</Text>
+                </View>
 
-            {loading ? (
-                <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />
-            ) : (
-                <ScrollView contentContainerStyle={styles.content}>
-                    {Array.isArray(detalle) && detalle.length > 0 ? (
-                        detalle.map((item, index) => (
-                            <View key={index} style={styles.card}>
-                                <Text style={styles.label}>Producto:</Text>
-                                <Text>{item.articulo}</Text>
-                                <Text style={styles.label}>Cantidad:</Text>
-                                <Text>{item.cantidad}</Text>
-                            </View>
-                        ))
-                    ) : (
-                        <Text style={{ textAlign: 'center', marginTop: 20 }}>No hay detalles disponibles.</Text>
-                    )}
-                </ScrollView>
-            )}
+                {/* Contenido */}
+                {loading ? (
+                    <ActivityIndicator size="large" color="#2563eb" style={{ marginTop: 30 }} />
+                ) : (
+                    <ScrollView contentContainerStyle={styles.content}>
+                        {Array.isArray(detalle) && detalle.length > 0 ? (
+                            detalle.map((item, index) => (
+                                <View key={index} style={styles.card}>
+                                    <View style={styles.cardHeader}>
+                                        <Ionicons name="cube-outline" size={20} color="#2563eb" />
+                                        <Text style={styles.cardTitle}>{item.articulo}</Text>
+                                    </View>
+                                    <View style={styles.cardDetailRow}>
+                                        <Text style={styles.detailLabel}>Cantidad:</Text>
+                                        <Text style={styles.detailValue}>{item.cantidad}</Text>
+                                    </View>
+                                </View>
+                            ))
+                        ) : (
+                            <Text style={styles.emptyText}>No hay detalles disponibles.</Text>
+                        )}
+                    </ScrollView>
+                )}
+            </View>
         </Modal>
     );
 };
 
+export default EntradaDetalle;
+
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#f9fafb',
+    },
     header: {
+        backgroundColor: '#2563eb',
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 15,
-        backgroundColor: '#f4f4f4',
+        paddingTop: 50,
+        paddingBottom: 15,
+        paddingHorizontal: 20,
+        elevation: 4,
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
     },
-    title: {
+    headerTitle: {
+        color: '#fff',
         fontSize: 20,
-        marginLeft: 10,
         fontWeight: 'bold',
+        marginLeft: 10,
     },
     content: {
         padding: 20,
     },
     card: {
-        padding: 15,
-        backgroundColor: '#fff',
-        borderRadius: 10,
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 12,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOpacity: 0.05,
+        shadowOffset: { width: 0, height: 2 },
+        shadowRadius: 4,
+        borderLeftWidth: 5,
+        borderLeftColor: '#2563eb',
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
         marginBottom: 10,
-        elevation: 2,
+    },
+
+    cardTitle: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1f2937',
+        marginLeft: 8,
+    },
+
+    cardDetailRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 6,
+    },
+
+    detailLabel: {
+        fontSize: 14,
+        color: '#6b7280',
+        fontWeight: '500',
+    },
+
+    detailValue: {
+        fontSize: 14,
+        color: '#111827',
+        fontWeight: '600',
     },
     label: {
-        fontWeight: 'bold',
-        marginTop: 5,
+        fontSize: 14,
+        color: '#374151',
+        fontWeight: '600',
+        marginTop: 6,
+    },
+    value: {
+        fontSize: 15,
+        color: '#1f2937',
+        marginBottom: 4,
+    },
+    emptyText: {
+        textAlign: 'center',
+        fontSize: 16,
+        color: '#6b7280',
+        marginTop: 40,
     },
 });
-
-export default EntradaDetalle;

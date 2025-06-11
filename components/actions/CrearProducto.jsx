@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, FlatList } from 'react-native';
+import { Modal, View, Text, TextInput, TouchableOpacity, Image, StyleSheet, FlatList, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import { API_URL } from '@env';
@@ -100,149 +100,187 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
     };
 
     return (
-        <Modal visible={visible} transparent animationType="fade">
-            <View style={styles.overlay}>
-                <View style={[
-                    styles.modalContainer,
-                    { width: isLandscape ? '70%' : '90%', maxHeight: isLandscape ? '80%' : '90%' }
-                ]}>
+        <Modal visible={visible} animationType="slide" presentationStyle="formSheet" statusBarTranslucent>
+            <View style={styles.fullscreen}>
+                <ScrollView contentContainerStyle={styles.scrollContainer}>
                     <Text style={styles.title}>Crear Producto</Text>
 
                     <TextInput style={styles.input} placeholder="Código" value={codigo} onChangeText={setCodigo} />
                     <TextInput style={styles.input} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
                     <TextInput style={styles.input} placeholder="Marca" value={marca} onChangeText={setMarca} />
-                    {/* Dropdown personalizado debajo de Marca */}
-                    <TouchableOpacity style={styles.dropdown} onPress={() => setDropdownVisible(true)}>
-                        <Text style={styles.dropdownText}>{unidad}</Text>
-                        <Ionicons name="chevron-down" size={20} color="#333" />
+
+                    {/* Dropdown personalizado */}
+                    <Text style={styles.label}>Unidad de Medida</Text>
+                    <TouchableOpacity style={styles.dropdown} onPress={() => setDropdownVisible(!dropdownVisible)}>
+                        <Text style={styles.dropdownText}>{unidad || 'Seleccionar unidad'}</Text>
+                        <Ionicons name="chevron-down" size={20} color="#374151" />
                     </TouchableOpacity>
                     {dropdownVisible && (
-                        <View style={styles.dropdownList}>
-                            <FlatList
-                                data={unidades}
-                                keyExtractor={(item) => item}
-                                renderItem={({ item }) => (
-                                    <TouchableOpacity style={styles.dropdownItem} onPress={() => { setUnidad(item); setDropdownVisible(false); }}>
-                                        <Text>{item}</Text>
+                        <View style={styles.dropdownWrapper}>
+                            <ScrollView style={styles.dropdownList} nestedScrollEnabled>
+                                {unidades.map((item) => (
+                                    <TouchableOpacity
+                                        key={item}
+                                        style={styles.dropdownItem}
+                                        onPress={() => {
+                                            setUnidad(item);
+                                            setDropdownVisible(false);
+                                        }}
+                                    >
+                                        <Text style={styles.dropdownItemText}>{item}</Text>
                                     </TouchableOpacity>
-                                )}
-                            />
+                                ))}
+                            </ScrollView>
                         </View>
                     )}
+
                     <TextInput style={styles.input} placeholder="Ubicación" value={ubicacion} onChangeText={setUbicacion} />
 
+                    {/* Botón para subir imagen */}
+                    {/* <TouchableOpacity style={styles.imageButton} onPress={seleccionarImagen}>
+                        <Ionicons name="image-outline" size={20} color="#fff" />
+                        <Text style={styles.imageButtonText}>Seleccionar Imagen</Text>
+                    </TouchableOpacity> */}
+
+                    {/* Vista previa de la imagen */}
+                    {/* {imagen && (
+                        <Image source={{ uri: imagen }} style={styles.imagePreview} />
+                    )} */}
+
                     {/* Botones de acción */}
-                    <View style={[
-                        styles.buttonContainer,
-                        { flexDirection: isLandscape ? 'row' : 'column' }
-                    ]}>
+                    <View style={styles.buttonRow}>
                         <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={handleCancel}>
                             <Text style={styles.buttonText}>Cancelar</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.button, styles.saveButton]}
-                            onPress={() => {
-                                console.log('🛑 Botón Guardar presionado');
-                                handleCreateProduct();
-                            }}
-                        >
+                        <TouchableOpacity style={[styles.button, styles.saveButton]} onPress={handleCreateProduct}>
                             <Text style={styles.buttonText}>Guardar</Text>
                         </TouchableOpacity>
                     </View>
-                </View>
+                </ScrollView>
+
+                <Alert visible={alertVisible} title={alertTitle} message={alertMessage} onClose={closeAlert} />
             </View>
-            {/* Alerta personalizada */}
-            <Alert
-                visible={alertVisible}
-                title={alertTitle}
-                message={alertMessage}
-                onClose={closeAlert} />
         </Modal>
     );
 };
 
 const styles = StyleSheet.create({
-    overlay: {
+    fullscreen: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)'
+        backgroundColor: '#fff',
     },
-    modalContainer: {
-        width: '100%',
+    scrollContainer: {
         padding: 20,
-        backgroundColor: 'white',
-        borderRadius: 10,
-        alignItems: 'center'
+        paddingBottom: 40,
     },
     title: {
-        fontSize: 20,
+        fontSize: 22,
         fontWeight: 'bold',
-        marginBottom: 10
+        color: '#1f2937',
+        textAlign: 'center',
+        marginBottom: 20,
+        marginTop: 30,
+    },
+    label: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#374151',
+        marginBottom: 6,
     },
     input: {
-        width: '100%',
-        padding: 10,
         borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        marginBottom: 10
+        borderColor: '#d1d5db',
+        borderRadius: 10,
+        padding: 12,
+        fontSize: 15,
+        marginBottom: 12,
+        color: '#111827',
     },
     dropdown: {
-        width: '100%',
-        padding: 10,
         borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
+        borderColor: '#d1d5db',
+        borderRadius: 10,
+        padding: 12,
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 10,
+        marginBottom: 12,
+    },
+    dropdownText: {
+        fontSize: 15,
+        color: '#111827',
+    },
+    dropdownWrapper: {
+        maxHeight: 180,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        marginBottom: 12,
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        zIndex: 999,
     },
     dropdownList: {
-        width: '100%',
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        backgroundColor: 'white',
-        position: 'absolute',
-        top: 180,
-        zIndex: 10,
+        paddingVertical: 4,
     },
-    imagePreview: {
-        width: 100,
-        height: 100,
-        marginVertical: 10
+    dropdownItem: {
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: '#e5e7eb',
     },
-    button: {
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        width: '48%'
-    },
-    buttonText: {
-        color: 'white',
-        fontWeight: 'bold'
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        width: '100%',
-        marginTop: 10
-    },
-    cancelButton: {
-        backgroundColor: 'red'
-    },
-    saveButton: {
-        backgroundColor: 'green'
+    dropdownItemText: {
+        fontSize: 15,
+        color: '#1f2937',
     },
     imageButton: {
-        backgroundColor: 'blue',
-        padding: 10,
-        borderRadius: 5,
+        backgroundColor: '#3b82f6',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 10,
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 10
+        gap: 10,
+        marginBottom: 12,
+    },
+    imageButtonText: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '600',
+    },
+    imagePreview: {
+        width: '100%',
+        height: 200,
+        borderRadius: 10,
+        marginBottom: 20,
+        resizeMode: 'cover',
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 10,
+        marginTop: 20,
+    },
+    button: {
+        flex: 1,
+        paddingVertical: 12,
+        borderRadius: 10,
+        alignItems: 'center',
+    },
+    cancelButton: {
+        backgroundColor: '#ef4444',
+    },
+    saveButton: {
+        backgroundColor: '#2563eb',
+    },
+    buttonText: {
+        color: '#fff',
+        fontWeight: '600',
+        fontSize: 16,
     },
 });
 

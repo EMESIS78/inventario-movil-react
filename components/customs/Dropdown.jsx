@@ -61,6 +61,11 @@ const styles = StyleSheet.create({
     wrapper: {
         marginHorizontal: 20,
         marginTop: 10,
+        backgroundColor: '#fff',
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#d1d5db',
+        padding: 10,
     },
     dropdownButton: {
         flexDirection: 'row',
@@ -75,8 +80,8 @@ const styles = StyleSheet.create({
         elevation: 2,
     },
     dropdownText: {
-        fontSize: 16,
-        color: '#333',
+        fontSize: 15,
+        color: '#1f2937',
     },
     overlay: {
         flex: 1,
