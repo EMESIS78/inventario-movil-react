@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions, Modal } from 'react-native';
+import React, { useState, useContext, useCallback } from 'react';
+import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, StyleSheet, ScrollView, useWindowDimensions } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import { AuthContext } from '../../src/AuthContext';
 import CrearEntrada from '../actions/CrearEntrada';
 import EntradaDetalle from '../extras/EntradaDetalle';
@@ -28,18 +28,14 @@ const Entradas = ({ navigation }: any) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [detalleDocumento, setDetalleDocumento] = useState<string | null>(null);
 
-  if (!auth) {
-    return <Text>Por favor inicia sesión</Text>;
-  }
-
   const fetchEntradas = useCallback(async () => {
+    if (!auth) return;
+
     setLoading(true);
     try {
       const response = await axios.get(`${API_URL}/entradas`, {
         headers: { Authorization: `Bearer ${auth.token}` },
       });
-
-      console.log('✅ Datos obtenidos:', response.data);
 
       if (response.data.success) {
         setEntradas(response.data.data);
@@ -51,26 +47,11 @@ const Entradas = ({ navigation }: any) => {
     } finally {
       setLoading(false);
     }
-  }, [auth.token]);
+  }, [auth]);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchEntradas();
-    }, [fetchEntradas])
-  );
+  const descargarPDF = useCallback(async () => {
+    if (!auth) return;
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
-  }
-
-  // Filtrar entradas por búsqueda
-  const filteredEntradas = entradas.filter((entrada) =>
-    entrada.documento.toLowerCase().includes(search.toLowerCase()) ||
-    entrada.almacen.toLowerCase().includes(search.toLowerCase()) ||
-    entrada.usuario.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const descargarPDF = async () => {
     try {
       const pdfUrl = `${API_URL}/reporte-entradas`;
       const fileUri = FileSystem.documentDirectory + 'reporte_entradas.pdf';
@@ -96,7 +77,24 @@ const Entradas = ({ navigation }: any) => {
     } catch (error) {
       console.error('❌ Error al descargar PDF:', error);
     }
-  };
+  }, [auth]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (auth) fetchEntradas();
+    }, [auth, fetchEntradas])
+  );
+
+  if (loading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
+  // Filtrar entradas por búsqueda
+  const filteredEntradas = entradas.filter((entrada) =>
+    entrada.documento.toLowerCase().includes(search.toLowerCase()) ||
+    entrada.almacen.toLowerCase().includes(search.toLowerCase()) ||
+    entrada.usuario.toLowerCase().includes(search.toLowerCase())
+  );
 
   return (
     <View style={styles.container}>

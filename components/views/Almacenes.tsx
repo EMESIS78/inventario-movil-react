@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useCallback, useContext } from 'react';
-import {
-    View, Text, FlatList, TouchableOpacity, StyleSheet, Platform,
-    StatusBar, Animated
-} from 'react-native';
+import React, { useState, useContext, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Platform, StatusBar } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
 import { AuthContext } from '@/src/AuthContext';
 import axios from 'axios';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import { Ionicons } from '@expo/vector-icons';
 
 interface Almacen {
@@ -22,21 +19,28 @@ const Almacenes = () => {
     const [almacenes, setAlmacenes] = useState<Almacen[]>([]);
 
     const fetchAlmacenes = useCallback(async () => {
+        if (!auth) return;
+
         try {
-            const response = await axios.get(`${API_URL}/almacenes`);
+            const response = await axios.get(`${API_URL}/almacenes`, {
+                headers: { Authorization: `Bearer ${auth.token}` },
+            });
             setAlmacenes(response.data);
         } catch (error) {
             console.error('❌ Error al obtener almacenes:', error);
         }
-    }, []);
+    }, [auth]);
 
-    useFocusEffect(useCallback(() => {
-        fetchAlmacenes();
-    }, [fetchAlmacenes]));
+    useFocusEffect(
+        useCallback(() => {
+            if (auth) fetchAlmacenes();
+        }, [auth, fetchAlmacenes])
+    );
 
     if (!auth) {
         return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
     }
+
 
     return (
         <View style={styles.container}>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, ScrollView, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, TextInput, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import { AuthContext } from '../../src/AuthContext';
 import CrearPlato from '../actions/CrearPlato';
 import EditarPlato from '../actions/EditarPlato';
@@ -40,19 +40,17 @@ const Platos = () => {
     const numColumns = isLandscape ? 3 : 1;
     const [platoExpandido, setPlatoExpandido] = useState<number | null>(null);
 
-    if (!auth) {
-        return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
-    }
-
-    const { user, token } = auth;
-
     const fetchPlatos = useCallback(async () => {
+        if (!auth) return;
+
         try {
             setLoading(true);
-            const response = await axios.get(`${API_URL}/platos`);
+            const response = await axios.get(`${API_URL}/platos`, {
+                headers: { Authorization: `Bearer ${auth.token}` },
+            });
             const fetchedPlatos = response.data.map((plato: Plato) => ({
                 ...plato,
-                precio: isNaN(plato.precio) ? 0 : plato.precio, // Asegurando que precio sea un número
+                precio: isNaN(plato.precio) ? 0 : plato.precio,
             }));
             setPlatos(fetchedPlatos);
             console.log('✅ Platos actualizados');
@@ -61,13 +59,19 @@ const Platos = () => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [auth]);
 
     useFocusEffect(
         useCallback(() => {
-            fetchPlatos();
-        }, [fetchPlatos, search])
+            if (auth) fetchPlatos();
+        }, [auth, fetchPlatos])
     );
+
+    if (!auth) {
+        return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
+    }
+
+    const { user, token } = auth;
 
     return (
         <View style={styles.container}>
