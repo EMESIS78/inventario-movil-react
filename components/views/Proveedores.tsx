@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, useWindowDimensions, ScrollView, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import { AuthContext } from '../../src/AuthContext';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,11 +19,13 @@ const Proveedores = () => {
     const [loading, setLoading] = useState(true);
     const { width, height } = useWindowDimensions();
 
-    const fetchProveedores = async () => {
+    const fetchProveedores = useCallback(async () => {
+        if (!auth) return;
+
         try {
             const response = await axios.get(`${API_URL}/proveedores`, {
                 headers: {
-                    Authorization: `Bearer ${auth?.token}`,
+                    Authorization: `Bearer ${auth.token}`,
                 },
             });
 
@@ -33,10 +35,11 @@ const Proveedores = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [auth]);
+
     useEffect(() => {
         fetchProveedores();
-    }, []);
+    }, [fetchProveedores]);
 
     if (loading) {
         return <ActivityIndicator size="large" color="#007bff" style={{ marginTop: 20 }} />;

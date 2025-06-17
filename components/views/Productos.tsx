@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView, ScrollView, Dimensions } from 'react-native';
 import { AuthContext } from '../../src/AuthContext';
 import axios from 'axios';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
@@ -44,45 +44,48 @@ const Productos = () => {
     const [search, setSearch] = useState('');
     const [loading, setLoading] = useState(true);
 
-    if (!auth) {
-        return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
-    }
-
-    const { user, token, loading: authLoading } = auth;
-    console.log('🧑 Usuario actual:', user);
-
     const fetchAlmacenes = useCallback(async () => {
+        if (!auth) return;
+
         try {
-            const response = await axios.get(`${API_URL}/almacenes`);
+            const response = await axios.get(`${API_URL}/almacenes`, {
+                headers: { Authorization: `Bearer ${auth.token}` },
+            });
             setAlmacenes(response.data);
             if (response.data.length > 0) setSelectedAlmacen(response.data[0]);
         } catch (error) {
             console.error('❌ Error al obtener almacenes:', error);
         }
-    }, []);
+    }, [auth]);
 
     const fetchProductosBase = useCallback(async () => {
+        if (!auth) return;
+
         try {
-            const response = await axios.get(`${API_URL}/productos`);
+            const response = await axios.get(`${API_URL}/productos`, {
+                headers: { Authorization: `Bearer ${auth.token}` },
+            });
             const productosLimpios = response.data.map(({ created_at, updated_at, ...resto }: any) => resto);
             setProductosBase(productosLimpios);
             console.log('✅ Productos base cargados');
         } catch (error) {
             console.error('❌ Error al obtener productos base:', error);
         }
-    }, []);
+    }, [auth]);
 
     const fetchInventario = useCallback(async () => {
-        const idAlmacen = user?.rol === 'admin'
+        if (!auth) return;
+
+        const idAlmacen = auth.user?.rol === 'admin'
             ? selectedAlmacen?.id
-            : user?.almacen_id;
+            : auth.user?.almacen_id;
 
         if (!idAlmacen || productosBase.length === 0) return;
 
         setLoading(true);
         try {
             const response = await axios.get(`${API_URL}/inventario?id_almacen=${idAlmacen}`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${auth.token}` },
             });
 
             const inventario = response.data;
@@ -99,29 +102,33 @@ const Productos = () => {
         } finally {
             setLoading(false);
         }
-    }, [selectedAlmacen, productosBase, token, user]);
+    }, [auth, selectedAlmacen, productosBase]);
 
     useFocusEffect(
         useCallback(() => {
             fetchAlmacenes();
             fetchProductosBase();
-        }, [fetchAlmacenes, fetchProductosBase, search])
+        }, [fetchAlmacenes, fetchProductosBase])
     );
 
     useEffect(() => {
-        if (authLoading) return;
+        if (!auth || auth.loading) return;
 
-        const idAlmacen = user?.rol === 'admin'
+        const idAlmacen = auth.user?.rol === 'admin'
             ? selectedAlmacen?.id
-            : user?.almacen_id;
+            : auth.user?.almacen_id;
 
         if (!idAlmacen || productosBase.length === 0) {
-            setLoading(false); // detener el loader visible
+            setLoading(false);
             return;
         }
 
         fetchInventario();
-    }, [selectedAlmacen, productosBase, user, authLoading]);
+    }, [auth, selectedAlmacen, productosBase]);
+
+    if (!auth) {
+        return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
+    }
 
     return (
         <View style={styles.container}>
@@ -135,7 +142,7 @@ const Productos = () => {
             </View>
 
             {/* Dropdown para seleccionar almacén */}
-            {user?.rol === 'admin' && (
+            {auth.user?.rol === 'admin' && (
                 <Dropdown
                     data={almacenes}
                     selectedValue={selectedAlmacen}
@@ -215,7 +222,7 @@ const Productos = () => {
             />
 
             {/* Botón flotante para agregar productos */}
-            {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
+            {(auth.user?.rol === 'admin' || auth.user?.rol === 'supervisor') && (
                 <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>
                     <Ionicons name="add" size={28} color="#fff" />
                 </TouchableOpacity>
