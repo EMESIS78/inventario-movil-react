@@ -3,7 +3,7 @@ import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, S
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import { API_URL } from '../../src/config/env';
+import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
 import CrearEntrada from '../actions/CrearEntrada';
 import EntradaDetalle from '../extras/EntradaDetalle';

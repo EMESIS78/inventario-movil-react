@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, useWindowDimensions, ScrollView, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '../../src/config/env';
+import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
 import { Ionicons } from '@expo/vector-icons';

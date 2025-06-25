@@ -4,7 +4,7 @@ import {
     ScrollView, KeyboardAvoidingView, Platform
 } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '../../src/config/env';
+import { API_URL } from '@env';
 import { AuthContext } from '@/src/AuthContext';
 import CustomDropdown from '../customs/CustomDropdown';
 

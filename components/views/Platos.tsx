@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
-import { API_URL } from '../../src/config/env';
+import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
 import CrearPlato from '../actions/CrearPlato';
 import EditarPlato from '../actions/EditarPlato';

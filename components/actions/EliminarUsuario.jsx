@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { View, Text, Modal, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '../../src/config/env';
+import { API_URL } from '@env';
 import { AuthContext } from '@/src/AuthContext';
 
 const EliminarUsuario = ({ visible, usuario, onClose, onSuccess }) => {

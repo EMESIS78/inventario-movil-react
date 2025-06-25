@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet, Image, FlatList, ScrollView } from 'react-native';
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
-import { API_URL } from '../../src/config/env';
+import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import Alert from '../customs/Alert'
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '../../src/config/env';
+import { API_URL } from '@env';
 import Alert from '../customs/Alert';
 
 const EliminarProducto = ({ visible, producto, onClose, onProductDeleted }) => {

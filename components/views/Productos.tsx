@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { View, Text, FlatList, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView, ScrollView, Dimensions } from 'react-native';
 import { AuthContext } from '../../src/AuthContext';
 import axios from 'axios';
-import { API_URL } from '../../src/config/env';
+import { API_URL } from '@env';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
