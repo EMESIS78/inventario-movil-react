@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import Alert from '../customs/Alert';
 
 const EliminarProducto = ({ visible, producto, onClose, onProductDeleted }) => {
@@ -39,7 +39,7 @@ const EliminarProducto = ({ visible, producto, onClose, onProductDeleted }) => {
             <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
                     <Text style={styles.modalTitle}>Eliminar Producto</Text>
-                    <Text style={styles.modalText}>¿Estás seguro de que deseas eliminar "{producto.nombre}"?</Text>
+                    <Text style={styles.modalText}>¿Estás seguro de que deseas eliminar &quot;{producto.nombre}&quot;?</Text>
 
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity style={styles.cancelButton} onPress={onClose}>

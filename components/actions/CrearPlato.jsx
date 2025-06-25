@@ -3,7 +3,7 @@ import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, S
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import { useWindowDimensions } from 'react-native';
 import Alert from '../customs/Alert';
 

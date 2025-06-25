@@ -3,7 +3,7 @@ import { View, Text, FlatList, ActivityIndicator, TextInput, TouchableOpacity, S
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import { AuthContext } from '../../src/AuthContext';
 import CrearSalida from '../actions/CrearSalida';
 import SalidaDetalle from '../extras/SalidaDetalle';
@@ -28,48 +28,27 @@ const Salidas = ({ navigation }: any) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [detalleDocumento, setDetalleDocumento] = useState<string | null>(null);
 
-    if (!auth) {
-        return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
-    }
-
     const fetchSalidas = useCallback(async () => {
+        if (!auth) return;
+
         setLoading(true);
         try {
-            const response = await axios.get(`${API_URL}/salidas`, {
+            const { data } = await axios.get(`${API_URL}/salidas`, {
                 headers: { Authorization: `Bearer ${auth.token}` },
             });
 
-            console.log('✅ Datos obtenidos:', response.data); // Depuración
-
-            if (response.data.success) {
-                setSalidas(response.data.data); // Asigna solo el array
-            } else {
-                console.error('❌ Error en la respuesta del servidor:', response.data.message);
-            }
+            if (data.success) setSalidas(data.data);
+            else console.error('❌ Error del servidor:', data.message);
         } catch (error) {
             console.error('❌ Error al obtener salidas:', error);
         } finally {
             setLoading(false);
         }
-    }, [auth.token]);
+    }, [auth]);
 
-    useFocusEffect(
-        useCallback(() => {
-            fetchSalidas();
-        }, [fetchSalidas])
-    );
+    const descargarPDF = useCallback(async () => {
+        if (!auth) return;
 
-    if (loading) {
-        return <ActivityIndicator size="large" color="#0000ff" />;
-    }
-
-    // Filtrar las salidas según la búsqueda
-    const filteredSalidas = salidas.filter((salida) =>
-        salida.almacen.toLowerCase().includes(search.toLowerCase()) ||
-        salida.motivo.toLowerCase().includes(search.toLowerCase())
-    );
-
-    const descargarPDF = async () => {
         try {
             const pdfUrl = `${API_URL}/reporte-salidas`;
             const fileUri = FileSystem.documentDirectory + 'reporte_salidas.pdf';
@@ -77,24 +56,35 @@ const Salidas = ({ navigation }: any) => {
             const downloadResumable = FileSystem.createDownloadResumable(
                 pdfUrl,
                 fileUri,
-                {
-                    headers: {
-                        Authorization: `Bearer ${auth.token}`,
-                    },
-                }
+                { headers: { Authorization: `Bearer ${auth.token}` } }
             );
-            const result = await downloadResumable.downloadAsync();
 
-            if (result && result.uri) {
-                console.log('📄 PDF descargado en:', result.uri);
-                await Sharing.shareAsync(result.uri);
-            } else {
-                console.warn('⚠️ La descarga no se completó correctamente.');
-            }
+            const result = await downloadResumable.downloadAsync();
+            if (result?.uri) await Sharing.shareAsync(result.uri);
+            else console.warn('⚠️ Descarga incompleta.');
         } catch (error) {
             console.error('❌ Error al descargar PDF:', error);
         }
-    };
+    }, [auth]);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (auth) fetchSalidas();
+        }, [auth, fetchSalidas])
+    );
+
+    if (!auth) {
+        return <Text>Error: No se pudo cargar el contexto de autenticación.</Text>;
+    }
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#0000ff" />;
+    }
+
+    const filteredSalidas = salidas.filter(s =>
+        s.almacen.toLowerCase().includes(search.toLowerCase()) ||
+        s.motivo.toLowerCase().includes(search.toLowerCase())
+    );
 
     return (
         <View style={styles.container}>

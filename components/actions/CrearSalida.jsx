@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, TextInput, Modal, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import axios from 'axios';
 import { AuthContext } from '../../src/AuthContext';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import CustomDropdown from '../customs/CustomDropdown';
 import Alert from '../customs/Alert';
 

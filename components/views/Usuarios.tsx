@@ -4,7 +4,7 @@ import {
   Platform, TouchableOpacity, StatusBar
 } from 'react-native';
 import axios from 'axios';
-import { API_URL } from '@env';
+import { API_URL } from '../../src/config/env';
 import { AuthContext } from '../../src/AuthContext';
 import CrearUsuario from '../actions/CrearUsuario';
 import EditarUsuario from '../actions/EditarUsuario';
