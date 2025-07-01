@@ -185,6 +185,19 @@ const Platos = () => {
                 }}
             />
 
+            {/* Modal para editar plato */}
+            {platoSeleccionado && (
+                <EditarPlato
+                    visible={!!platoSeleccionado}
+                    plato={platoSeleccionado}
+                    onClose={() => setPlatoSeleccionado(null)}
+                    onUpdated={() => {
+                        setPlatoSeleccionado(null);
+                        fetchPlatos();
+                    }}
+                />
+            )}
+
             {/* Botón flotante */}
             {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
                 <TouchableOpacity style={styles.fab} onPress={() => setModalVisible(true)}>

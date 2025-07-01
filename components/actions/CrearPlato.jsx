@@ -96,7 +96,7 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
                 cantidad_requerida: parseFloat(i.cantidad_requerida)
             }))));
 
-            if (imagen) {
+            if (imagen && imagen.uri && imagen.name) {
                 formData.append('imagen', {
                     uri: imagen.uri,
                     name: imagen.name,
@@ -175,41 +175,23 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
                     )}
 
                     <Text style={styles.sectionTitle}>Insumos</Text>
-                    {insumos.map((insumo, index) => (
-                        <View key={index} style={{ ...styles.insumoContainer, marginBottom: index === insumos.length - 1 ? 10 : 0 }}>
-                            <View style={{ flex: 2 }}>
+                    <View style={styles.insumosWrapper}>
+                        {insumos.map((insumo, index) => (
+                            <View key={index} style={styles.insumoCard}>
+                                {/* Selector de insumo tipo botón */}
                                 <TouchableOpacity
+                                    style={styles.insumoSelect}
                                     onPress={() => setDropdownVisibleIndex(index)}
-                                    style={{
-                                        borderWidth: 1,
-                                        borderColor: '#ccc',
-                                        padding: 10,
-                                        borderRadius: 8,
-                                        backgroundColor: '#fff'
-                                    }}
                                 >
-                                    <Text>
-                                        {
-                                            productos.find(p => p.id_producto === insumo.id_producto)?.nombre
-                                            || 'Insumo'
-                                        }
+                                    <Text style={styles.insumoText}>
+                                        {productos.find(p => p.id_producto === insumo.id_producto)?.nombre || 'Seleccionar Insumo'}
                                     </Text>
+                                    <Ionicons name="chevron-down" size={18} color="#555" />
                                 </TouchableOpacity>
 
+                                {/* Dropdown personalizado */}
                                 {dropdownVisibleIndex === index && (
-                                    <View
-                                        style={{
-                                            position: 'absolute',
-                                            top: 50,
-                                            left: 0,
-                                            right: 0,
-                                            backgroundColor: '#fff',
-                                            borderWidth: 1,
-                                            borderColor: '#ccc',
-                                            borderRadius: 8,
-                                            zIndex: 999,
-                                        }}
-                                    >
+                                    <View style={styles.dropdown}>
                                         <ScrollView style={{ maxHeight: 150 }}>
                                             {productoOptions.map(option => (
                                                 <TouchableOpacity
@@ -218,11 +200,7 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
                                                         handleChangeInsumo(index, 'id_producto', option.value);
                                                         setDropdownVisibleIndex(null);
                                                     }}
-                                                    style={{
-                                                        padding: 10,
-                                                        borderBottomWidth: 1,
-                                                        borderBottomColor: '#eee'
-                                                    }}
+                                                    style={styles.dropdownOption}
                                                 >
                                                     <Text>{option.label}</Text>
                                                 </TouchableOpacity>
@@ -230,24 +208,26 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
                                         </ScrollView>
                                     </View>
                                 )}
+
+                                {/* Fila de cantidad + eliminar */}
+                                <View style={styles.cantidadRow}>
+                                    <TextInput
+                                        placeholder="Cantidad"
+                                        value={insumo.cantidad_requerida.toString()}
+                                        onChangeText={(text) => handleChangeInsumo(index, 'cantidad_requerida', text)}
+                                        style={styles.cantidadInput}
+                                        keyboardType="numeric"
+                                    />
+                                    <TouchableOpacity onPress={() => handleEliminarInsumo(index)} style={styles.removeIcon}>
+                                        <Ionicons name="trash" size={20} color="#dc2626" />
+                                    </TouchableOpacity>
+                                </View>
                             </View>
+                        ))}
+                    </View>
 
-                            <TextInput
-                                placeholder="Cantidad"
-                                value={insumo.cantidad_requerida.toString()}
-                                onChangeText={(text) => handleChangeInsumo(index, 'cantidad_requerida', text)}
-                                style={styles.inputSmall}
-                                keyboardType="numeric"
-                            />
-                            <TouchableOpacity onPress={() => handleEliminarInsumo(index)} style={styles.removeButton}>
-                                <Text style={styles.removeButtonText}>X</Text>
-                            </TouchableOpacity>
-
-                        </View>
-                    ))}
-
-                    <TouchableOpacity onPress={handleAgregarInsumo} style={styles.addButton}>
-                        <Text style={styles.addButtonText}>+ Agregar Insumo</Text>
+                    <TouchableOpacity onPress={handleAgregarInsumo} style={[styles.addButton, { backgroundColor: '#2563eb', borderRadius: 10, marginTop: 15 }]}>
+                        <Text style={[styles.addButtonText, { color: '#fff' }]}>+ Añadir Insumo</Text>
                     </TouchableOpacity>
 
                     <View style={styles.actions}>
@@ -264,7 +244,7 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
                 visible={alertVisible}
                 title={alertTitle}
                 message={alertMessage}
-                onClose={closeAlert} />        
+                onClose={closeAlert} />
         </Modal>
     );
 };
@@ -363,7 +343,76 @@ const styles = StyleSheet.create({
     saveButtonText: {
         color: '#fff',
         fontWeight: 'bold'
-    }
+    },
+    insumosWrapper: {
+        marginTop: 10,
+        gap: 12,
+    },
+
+    insumoCard: {
+        backgroundColor: '#fff',
+        padding: 12,
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 2,
+    },
+
+    insumoSelect: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 8,
+    },
+
+    insumoText: {
+        fontSize: 14,
+        color: '#111827',
+    },
+
+    cantidadRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+    },
+
+    cantidadInput: {
+        flex: 1,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        paddingHorizontal: 10,
+        height: 40,
+    },
+
+    removeIcon: {
+        padding: 6,
+        backgroundColor: '#fee2e2',
+        borderRadius: 6,
+    },
+
+    dropdown: {
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        maxHeight: 200,
+        marginBottom: 10,
+        marginTop: -6,
+        zIndex: 999,
+        elevation: 5,
+    },
+
+    dropdownOption: {
+        padding: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: '#eee',
+    },
 });
 
 export default CrearPlato;
