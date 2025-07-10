@@ -106,7 +106,7 @@ const Platos = () => {
                     renderItem={({ item }) => (
                         <View style={styles.card}>
                             <Image
-                                source={{ uri: `http://192.168.0.86:3000/uploads/${item.imagen}` }}
+                                source={{ uri: item.imagen }}
                                 style={styles.productImage}
                                 resizeMode="cover"
                             />

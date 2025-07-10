@@ -7,6 +7,7 @@ import { DrawerNavProp } from '@/src/navigation/navigationTypes';
 import { useWindowDimensions } from 'react-native';
 import io from 'socket.io-client';
 import { API_URL, SOCKET_URL } from '@env';
+import * as Animatable from 'react-native-animatable';
 
 const COLORS = {
   background: '#F9FAFB',
@@ -55,8 +56,14 @@ const HomeScreen = () => {
       setNotifications((prev) => [...prev, data]);
     });
 
+    socket.on('entrada-registrada', (data) => {
+      console.log('📡 Notificación de entrada recibida:', data);
+      setNotifications((prev) => [...prev, data]);
+    });
+
     return () => {
       socket.off('salida-registrada');
+      socket.off('entrada-registrada');
     };
   }, []);
 
@@ -80,6 +87,16 @@ const HomeScreen = () => {
           {user?.rol === 'admin' && (
             <TouchableOpacity onPress={() => setNotificationModalVisible(true)} style={styles.bellButton}>
               <MaterialIcons name="notifications" size={24} color={COLORS.primary} />
+
+              {/* Puntito rojo animado */}
+              {notifications.length > 0 && (
+                <Animatable.View
+                  animation="pulse"
+                  iterationCount="infinite"
+                  easing="ease-in-out"
+                  style={styles.notificationDot}
+                />
+              )}
             </TouchableOpacity>
           )}
         </View>
@@ -107,7 +124,7 @@ const HomeScreen = () => {
       </Pressable>
 
       {/* Modal Notificaciones */}
-      <Modal visible={notificationModalVisible} transparent animationType="slide">
+      <Modal visible={notificationModalVisible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Notificaciones</Text>
@@ -255,5 +272,14 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     textAlign: 'center',
     fontWeight: 'bold',
+  },
+  notificationDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: 'red',
+    position: 'absolute',
+    top: 0,
+    right: 0,
   },
 });
