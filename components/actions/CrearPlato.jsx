@@ -192,7 +192,7 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
                                 {/* Dropdown personalizado */}
                                 {dropdownVisibleIndex === index && (
                                     <View style={styles.dropdown}>
-                                        <ScrollView style={{ maxHeight: 150 }}>
+                                        <ScrollView style={{ maxHeight: 200 }} nestedScrollEnabled={true}>
                                             {productoOptions.map(option => (
                                                 <TouchableOpacity
                                                     key={option.value}
@@ -231,7 +231,18 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
                     </TouchableOpacity>
 
                     <View style={styles.actions}>
-                        <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setNombre('');
+                                setDescripcion('');
+                                setPrecio('');
+                                setImagen(null);
+                                setInsumos([{ id_producto: '', cantidad_requerida: '' }]);
+                                setDropdownVisibleIndex(null);
+                                onClose();
+                            }}
+                            style={styles.cancelButton}
+                        >
                             <Text style={styles.cancelButtonText}>Cancelar</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleGuardar} style={styles.saveButton}>

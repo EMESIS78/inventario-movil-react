@@ -1,10 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
-import { AuthContext } from '../../src/AuthContext'; // Asegúrate de que la ruta sea correcta
+import { View, Text, StyleSheet, Pressable, ScrollView, Dimensions, TouchableOpacity, Modal } from 'react-native';
+import { AuthContext } from '../../src/AuthContext';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { DrawerNavProp } from '@/src/navigation/navigationTypes';
 import { useWindowDimensions } from 'react-native';
+import io from 'socket.io-client';
+import { API_URL, SOCKET_URL } from '@env';
 
 const COLORS = {
   background: '#F9FAFB',
@@ -29,11 +31,34 @@ const menuItems = [
   { name: 'Reportes', icon: 'assessment', roles: ['admin', 'supervisor'], route: 'Reportes' },
 ];
 
+const socket = io(SOCKET_URL);
+
 const HomeScreen = () => {
   const navigation = useNavigation<DrawerNavProp>();
   const auth = useContext(AuthContext);
   const { width, height } = useWindowDimensions();
   const isLandscape = width > height; // Ahora detecta la orientación correctamente
+
+  type Notification = {
+    mensaje: string;
+    fecha: string;
+    usuario: string;
+    motivo: string;
+  };
+
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notificationModalVisible, setNotificationModalVisible] = useState(false);
+
+  useEffect(() => {
+    socket.on('salida-registrada', (data) => {
+      console.log('📡 Notificación recibida:', data);
+      setNotifications((prev) => [...prev, data]);
+    });
+
+    return () => {
+      socket.off('salida-registrada');
+    };
+  }, []);
 
   if (!auth) return <Text>Error: AuthContext no disponible</Text>;
 
@@ -41,12 +66,26 @@ const HomeScreen = () => {
   const filteredMenu = menuItems.filter(item => item.roles.includes(user?.rol || ''));
   const cardSize = isLandscape ? width / 4.5 : width / 2.5;
 
+  const clearNotifications = () => {
+    setNotifications([]);
+    setNotificationModalVisible(false);
+  };
+
   return (
     <View style={[styles.container, isLandscape && styles.containerLandscape]}>
-      <Text style={styles.title}>Bienvenido, {user?.name || 'Usuario'}</Text>
-      <Text style={styles.subtitle}>Rol: {user?.rol || 'Sin rol'}</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.title}>Bienvenido, {user?.name || 'Usuario'}</Text>
+        <View style={styles.roleContainer}>
+          <Text style={styles.subtitle}></Text>
+          {user?.rol === 'admin' && (
+            <TouchableOpacity onPress={() => setNotificationModalVisible(true)} style={styles.bellButton}>
+              <MaterialIcons name="notifications" size={24} color={COLORS.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
 
-      <ScrollView contentContainerStyle={[styles.menuContainer, isLandscape && styles.menuContainerLandscape,]}>
+      <ScrollView contentContainerStyle={[styles.menuContainer, isLandscape && styles.menuContainerLandscape]}>
         {filteredMenu.map((item) => (
           <Pressable
             key={item.route}
@@ -66,6 +105,32 @@ const HomeScreen = () => {
         <MaterialIcons name="exit-to-app" size={20} color={COLORS.white} />
         <Text style={styles.logoutText}>Cerrar Sesión</Text>
       </Pressable>
+
+      {/* Modal Notificaciones */}
+      <Modal visible={notificationModalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Notificaciones</Text>
+            <ScrollView>
+              {notifications.length > 0 ? (
+                notifications.map((n, idx) => (
+                  <View key={idx} style={styles.notificationCard}>
+                    <Text>{n.mensaje}</Text>
+                    <Text style={{ fontSize: 12, color: COLORS.textLight }}>{n.fecha}</Text>
+                    <Text style={{ fontSize: 12, color: COLORS.textLight }}>Usuario: {n.usuario}</Text>
+                    <Text style={{ fontSize: 12, color: COLORS.textLight }}>Motivo: {n.motivo}</Text>
+                  </View>
+                ))
+              ) : (
+                <Text style={{ textAlign: 'center' }}>No hay notificaciones nuevas.</Text>
+              )}
+            </ScrollView>
+            <TouchableOpacity style={styles.clearButton} onPress={clearNotifications}>
+              <Text style={styles.clearButtonText}>Cerrar Notificaciones</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -144,5 +209,51 @@ const styles = StyleSheet.create({
     fontSize: 14,
     marginLeft: 8,
     fontWeight: '600',
+  },
+  headerRow: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  roleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  bellButton: {
+    marginLeft: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContainer: {
+    backgroundColor: COLORS.white,
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  notificationCard: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 10,
+  },
+  clearButton: {
+    backgroundColor: COLORS.danger,
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  clearButtonText: {
+    color: COLORS.white,
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
 });

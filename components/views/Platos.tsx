@@ -204,6 +204,18 @@ const Platos = () => {
                     <Ionicons name="add" size={28} color="#fff" />
                 </TouchableOpacity>
             )}
+
+            {platoAEliminar && (
+                <EliminarPlato
+                    visible={!!platoAEliminar}
+                    plato={platoAEliminar}
+                    onClose={() => setPlatoAEliminar(null)}
+                    onPlatoDeleted={() => {
+                        setPlatoAEliminar(null);
+                        fetchPlatos();
+                    }}
+                />
+            )}
         </View>
     );
 };

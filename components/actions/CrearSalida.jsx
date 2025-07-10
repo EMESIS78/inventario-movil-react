@@ -16,6 +16,7 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
   const [alertTitle, setAlertTitle] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const [wasSuccessful, setWasSuccessful] = useState(false);
+  const [productosDisponibles, setProductosDisponibles] = useState([]);
   const [p_motivo, setMotivo] = useState('');
 
   useEffect(() => {
@@ -45,6 +46,23 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
 
     fetchAlmacenes();
   }, [auth.token]);
+
+  const fetchProductosConStock = async (idAlmacen) => {
+    try {
+      const res = await axios.get(`${API_URL}/productos-con-stock`, {
+        params: { id_almacen: idAlmacen },
+        headers: { Authorization: `Bearer ${auth.token}` },
+      });
+      setProductosDisponibles(res.data);
+    } catch (err) {
+      console.error('❌ Error al obtener productos con stock:', err);
+    }
+  };
+
+  const handleAlmacenChange = (value) => {
+    setAlmacen(value);
+    fetchProductosConStock(value);
+  };
 
   const handleChangeTemp = (field, value) => {
     setProductoTemp(prev => ({ ...prev, [field]: value }));
@@ -128,35 +146,45 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
     }
   };
 
-  const buscarProducto = async (index, tipo, valor) => {
-    try {
-      if (!valor.trim()) return;
+  const buscarProducto = (index, tipo, valor) => {
+    if (!valor.trim()) return;
 
-      const params = tipo === 'nombre' ? { nombre: valor } : { codigo: valor };
+    const producto = productosDisponibles.find(p =>
+      tipo === 'nombre'
+        ? p.nombre.toLowerCase() === valor.toLowerCase()
+        : p.codigo.toLowerCase() === valor.toLowerCase()
+    );
 
-      const response = await axios.get(`${API_URL}/productos/buscar`, {
-        params,
-        headers: { Authorization: `Bearer ${auth.token}` },
-      });
+    if (!producto) {
+      showCustomAlert('Producto no válido', 'Este producto no tiene stock o no existe.');
 
-      const { nombre, codigo } = response.data;
-
+      // Limpiar los datos del producto inválido
       if (index === -1) {
-        // Actualiza el producto temporal
-        setProductoTemp(prev => ({
-          ...prev,
-          nombre,
-          codigo,
-        }));
+        setProductoTemp({ nombre: '', codigo: '', cantidad: '' });
       } else {
-        // (opcional, si en el futuro vuelves a usar índices)
         const updated = [...productos];
-        updated[index].nombre = nombre;
-        updated[index].codigo = codigo;
+        updated[index] = { nombre: '', codigo: '', cantidad: '' };
         setProductos(updated);
       }
-    } catch (error) {
-      console.error('❌ Producto no encontrado o error en la búsqueda:', error);
+
+      return;  // Salir de la función
+    }
+
+    // Si el producto es válido, lo asignamos
+    if (index === -1) {
+      setProductoTemp({
+        ...productoTemp,
+        nombre: producto.nombre,
+        codigo: producto.codigo,
+      });
+    } else {
+      const updated = [...productos];
+      updated[index] = {
+        ...updated[index],
+        nombre: producto.nombre,
+        codigo: producto.codigo,
+      };
+      setProductos(updated);
     }
   };
 
@@ -182,7 +210,7 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
             label="Selecciona un almacén"
             data={almacenes}
             selectedValue={almacen}
-            onSelect={setAlmacen}
+            onSelect={handleAlmacenChange}
           />
 
           <TextInput
@@ -236,7 +264,7 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
                 <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode='tail'>{producto.nombre}</Text>
                 <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode='tail'>{producto.codigo}</Text>
                 <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode='tail'>{producto.cantidad}</Text>
-                <TouchableOpacity style={styles.deleteProduct}  onPress={() => eliminarProducto(index)}>
+                <TouchableOpacity style={styles.deleteProduct} onPress={() => eliminarProducto(index)}>
                   <Text style={styles.tableCell}>Eliminar</Text>
                 </TouchableOpacity>
               </View>

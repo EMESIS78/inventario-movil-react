@@ -204,7 +204,7 @@ const EditarPlato = ({ visible, onClose, onUpdated, plato }) => {
                 {/* Dropdown visible */}
                 {dropdownVisibleIndex === index && (
                   <View style={styles.dropdown}>
-                    <ScrollView>
+                    <ScrollView style={{ maxHeight: 200 }} nestedScrollEnabled={true}>
                       {productoOptions.map(option => (
                         <TouchableOpacity
                           key={option.value}

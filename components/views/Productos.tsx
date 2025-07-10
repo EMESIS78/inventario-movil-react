@@ -90,10 +90,13 @@ const Productos = () => {
 
             const inventario = response.data;
 
-            const productosConStock = inventario.map((item: any) => {
-                const productoBase = productosBase.find(p => p.id_producto === item.id_producto);
-                return productoBase ? { ...productoBase, stock: item.stock } : null;
-            }).filter(Boolean) as Producto[];
+            const productosConStock = productosBase.map(producto => {
+                const itemInventario = inventario.find((item: any) => item.id_producto === producto.id_producto);
+                return {
+                    ...producto,
+                    stock: itemInventario ? itemInventario.stock : 0,  // Si no existe en inventario, stock = 0
+                };
+            });
 
             setProductos(productosConStock);
             console.log('✅ Inventario cargado');
