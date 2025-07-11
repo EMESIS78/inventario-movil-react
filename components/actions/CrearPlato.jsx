@@ -141,6 +141,7 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
 
                     <TextInput
                         placeholder="Nombre del plato"
+                        placeholderTextColor="#000000"
                         value={nombre}
                         onChangeText={setNombre}
                         style={styles.input}
@@ -148,6 +149,7 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
 
                     <TextInput
                         placeholder="Descripción"
+                        placeholderTextColor="#000000"
                         value={descripcion}
                         onChangeText={setDescripcion}
                         style={styles.input}
@@ -156,6 +158,7 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
 
                     <TextInput
                         placeholder="Precio (€)"
+                        placeholderTextColor="#000000"
                         value={precio}
                         onChangeText={setPrecio}
                         style={styles.input}
@@ -214,6 +217,7 @@ const CrearPlato = ({ visible, onClose, onCreated }) => {
                                     <TextInput
                                         placeholder="Cantidad"
                                         value={insumo.cantidad_requerida.toString()}
+                                        placeholderTextColor="#000000"
                                         onChangeText={(text) => handleChangeInsumo(index, 'cantidad_requerida', text)}
                                         style={styles.cantidadInput}
                                         keyboardType="numeric"

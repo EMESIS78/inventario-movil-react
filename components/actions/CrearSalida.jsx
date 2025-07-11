@@ -140,7 +140,7 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
         showCustomAlert('Éxito', 'Salida registrada correctamente.');
       }
     } catch (error) {
-      console.error('❌ Error al registrar salida:', error);
+      console.error('❌ Error al registrar salida:', error.message);
       setWasSuccessful(false);
       showCustomAlert('Error', 'No se pudo registrar la salida.');
     }
@@ -216,6 +216,7 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
           <TextInput
             style={styles.input}
             placeholder="Motivo de la salida"
+            placeholderTextColor="#000000"
             value={p_motivo}
             onChangeText={setMotivo}
           />
@@ -226,6 +227,7 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
             <TextInput
               placeholder="Nombre"
               value={productoTemp.nombre}
+              placeholderTextColor="#000000"
               onChangeText={(text) => handleChangeTemp('nombre', text)}
               onBlur={() => buscarProducto(-1, 'nombre', productoTemp.nombre)}
               style={styles.inputSmall}
@@ -233,6 +235,7 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
             <TextInput
               placeholder="Código"
               value={productoTemp.codigo}
+              placeholderTextColor="#000000"
               onChangeText={(text) => handleChangeTemp('codigo', text)}
               onBlur={() => buscarProducto(-1, 'codigo', productoTemp.codigo)}
               style={styles.inputSmall}
@@ -240,6 +243,7 @@ const CrearSalida = ({ visible, onClose, onSuccess }) => {
             <TextInput
               placeholder="Cantidad"
               value={productoTemp.cantidad}
+              placeholderTextColor="#000000"
               onChangeText={(text) => handleChangeTemp('cantidad', text)}
               style={styles.inputSmall}
               keyboardType="numeric"

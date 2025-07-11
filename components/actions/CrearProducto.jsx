@@ -105,9 +105,9 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
                 <ScrollView contentContainerStyle={styles.scrollContainer}>
                     <Text style={styles.title}>Crear Producto</Text>
 
-                    <TextInput style={styles.input} placeholder="Código" value={codigo} onChangeText={setCodigo} />
-                    <TextInput style={styles.input} placeholder="Nombre" value={nombre} onChangeText={setNombre} />
-                    <TextInput style={styles.input} placeholder="Marca" value={marca} onChangeText={setMarca} />
+                    <TextInput style={styles.input} placeholder="Código" placeholderTextColor="#000000" value={codigo} onChangeText={setCodigo} />
+                    <TextInput style={styles.input} placeholder="Nombre" placeholderTextColor="#000000" value={nombre} onChangeText={setNombre} />
+                    <TextInput style={styles.input} placeholder="Marca" placeholderTextColor="#000000" value={marca} onChangeText={setMarca} />
 
                     {/* Dropdown personalizado */}
                     <Text style={styles.label}>Unidad de Medida</Text>
@@ -134,7 +134,7 @@ const CrearProducto = ({ visible, onClose, onProductAdded }) => {
                         </View>
                     )}
 
-                    <TextInput style={styles.input} placeholder="Ubicación" value={ubicacion} onChangeText={setUbicacion} />
+                    <TextInput style={styles.input} placeholder="Ubicación" placeholderTextColor="#000000" value={ubicacion} onChangeText={setUbicacion} />
 
                     {/* Botón para subir imagen */}
                     {/* <TouchableOpacity style={styles.imageButton} onPress={seleccionarImagen}>

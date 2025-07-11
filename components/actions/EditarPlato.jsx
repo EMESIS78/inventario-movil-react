@@ -152,6 +152,7 @@ const EditarPlato = ({ visible, onClose, onUpdated, plato }) => {
 
           <TextInput
             placeholder="Nombre del plato"
+            placeholderTextColor="#000000"
             value={nombre}
             onChangeText={setNombre}
             style={styles.input}
@@ -159,6 +160,7 @@ const EditarPlato = ({ visible, onClose, onUpdated, plato }) => {
 
           <TextInput
             placeholder="Descripción"
+            placeholderTextColor="#000000"
             value={descripcion}
             onChangeText={setDescripcion}
             style={styles.input}
@@ -167,6 +169,7 @@ const EditarPlato = ({ visible, onClose, onUpdated, plato }) => {
 
           <TextInput
             placeholder="Precio (€)"
+            placeholderTextColor="#000000"
             value={precio}
             onChangeText={setPrecio}
             style={styles.input}
@@ -225,6 +228,7 @@ const EditarPlato = ({ visible, onClose, onUpdated, plato }) => {
                 <View style={styles.cantidadRow}>
                   <TextInput
                     placeholder="Cantidad"
+                    placeholderTextColor="#000000"
                     value={insumo.cantidad_requerida.toString()}
                     onChangeText={(text) => handleChangeInsumo(index, 'cantidad_requerida', text)}
                     style={styles.cantidadInput}

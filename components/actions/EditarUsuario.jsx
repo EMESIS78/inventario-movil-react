@@ -76,12 +76,14 @@ const EditarUsuario = ({ visible, usuario, onClose, onSuccess }) => {
                         <TextInput
                             style={styles.input}
                             placeholder="Nombre completo"
+                            placeholderTextColor="#000000"
                             value={formData.name}
                             onChangeText={(text) => handleChange('name', text)}
                         />
                         <TextInput
                             style={styles.input}
                             placeholder="Correo electrónico"
+                            placeholderTextColor="#000000"
                             value={formData.email}
                             keyboardType="email-address"
                             onChangeText={(text) => handleChange('email', text)}
@@ -89,6 +91,7 @@ const EditarUsuario = ({ visible, usuario, onClose, onSuccess }) => {
                         <TextInput
                             style={styles.input}
                             placeholder="Nueva contraseña (opcional)"
+                            placeholderTextColor="#000000"
                             secureTextEntry
                             onChangeText={(text) => handleChange('password', text)}
                         />

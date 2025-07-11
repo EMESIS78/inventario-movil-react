@@ -58,12 +58,14 @@ const CrearUsuario = ({ visible, onClose, onSuccess }) => {
                             style={styles.input}
                             placeholder="Nombre completo"
                             value={formData.name}
+                            placeholderTextColor="#000000"
                             onChangeText={text => handleChange('name', text)}
                         />
                         <TextInput
                             style={styles.input}
                             placeholder="Correo electrónico"
                             value={formData.email}
+                            placeholderTextColor="#000000"
                             keyboardType="email-address"
                             onChangeText={text => handleChange('email', text)}
                         />
@@ -71,6 +73,7 @@ const CrearUsuario = ({ visible, onClose, onSuccess }) => {
                             style={styles.input}
                             placeholder="Contraseña"
                             value={formData.password}
+                            placeholderTextColor="#000000"
                             secureTextEntry
                             onChangeText={text => handleChange('password', text)}
                         />

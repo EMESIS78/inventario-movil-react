@@ -191,6 +191,7 @@ const CrearEntrada = ({ visible, onClose, onSuccess }) => {
                     <TextInput
                         placeholder="Documento"
                         value={documento}
+                        placeholderTextColor="#000000"
                         onChangeText={(text) => setDocumento(text.toUpperCase())}
                         style={styles.input}
                     />
@@ -198,6 +199,7 @@ const CrearEntrada = ({ visible, onClose, onSuccess }) => {
                     <TextInput
                         placeholder="ID Proveedor"
                         value={proveedor}
+                        placeholderTextColor="#000000"
                         onChangeText={setProveedor}
                         style={styles.input}
                         keyboardType="number-pad"
@@ -209,6 +211,7 @@ const CrearEntrada = ({ visible, onClose, onSuccess }) => {
                         <TextInput
                             placeholder="Nombre"
                             value={productoTemp.nombre}
+                            placeholderTextColor="#000000"
                             onChangeText={(text) => handleChangeTemp('nombre', text)}
                             onBlur={() => buscarProducto(-1, 'nombre', productoTemp.nombre)}
                             style={styles.inputSmall}
@@ -216,6 +219,7 @@ const CrearEntrada = ({ visible, onClose, onSuccess }) => {
                         <TextInput
                             placeholder="Código"
                             value={productoTemp.codigo}
+                            placeholderTextColor="#000000"
                             onChangeText={(text) => handleChangeTemp('codigo', text)}
                             onBlur={() => buscarProducto(-1, 'codigo', productoTemp.codigo)}
                             style={styles.inputSmall}
@@ -223,6 +227,7 @@ const CrearEntrada = ({ visible, onClose, onSuccess }) => {
                         <TextInput
                             placeholder="Cantidad"
                             value={productoTemp.cantidad}
+                            placeholderTextColor="#000000"
                             onChangeText={(text) => handleChangeTemp('cantidad', text)}
                             style={styles.inputSmall}
                             keyboardType="numeric"

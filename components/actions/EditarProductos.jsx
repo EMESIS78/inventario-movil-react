@@ -74,13 +74,13 @@ const EditarProducto = ({ visible, producto, onClose, onProductUpdated }) => {
                     <Text style={styles.title}>Editar Producto</Text>
 
                     <Text style={styles.label}>Código</Text>
-                    <TextInput style={styles.input} value={codigo} onChangeText={setCodigo} placeholder="Ingrese código del producto" />
+                    <TextInput style={styles.input} value={codigo} onChangeText={setCodigo} placeholder="Ingrese código del producto" placeholderTextColor="#000000"/>
 
                     <Text style={styles.label}>Nombre</Text>
-                    <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder="Ingrese nombre del producto" />
+                    <TextInput style={styles.input} value={nombre} onChangeText={setNombre} placeholder="Ingrese nombre del producto" placeholderTextColor="#000000"/>
 
                     <Text style={styles.label}>Marca</Text>
-                    <TextInput style={styles.input} value={marca} onChangeText={setMarca} placeholder="Ingrese la marca" />
+                    <TextInput style={styles.input} value={marca} onChangeText={setMarca} placeholder="Ingrese la marca" placeholderTextColor="#000000"/>
 
                     <Text style={styles.label}>Unidad de Medida</Text>
                     <TouchableOpacity style={styles.dropdown} onPress={() => setDropdownVisible(!dropdownVisible)}>
@@ -107,7 +107,7 @@ const EditarProducto = ({ visible, producto, onClose, onProductUpdated }) => {
                     )}
 
                     <Text style={styles.label}>Ubicación</Text>
-                    <TextInput style={styles.input} value={ubicacion} onChangeText={setUbicacion} placeholder="Ubicación en almacén" />
+                    <TextInput style={styles.input} value={ubicacion} onChangeText={setUbicacion} placeholder="Ubicación en almacén" placeholderTextColor="#000000"/>
 
                     <TouchableOpacity style={styles.saveButton} onPress={handleActualizar}>
                         <Text style={styles.saveButtonText}>Actualizar</Text>
