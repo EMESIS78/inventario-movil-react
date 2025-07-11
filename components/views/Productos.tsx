@@ -157,6 +157,7 @@ const Productos = () => {
             <TextInput
                 style={styles.searchInput}
                 placeholder="Buscar producto..."
+                placeholderTextColor="#000000"
                 value={search}
                 onChangeText={setSearch}
             />

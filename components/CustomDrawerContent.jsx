@@ -4,8 +4,23 @@ import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
 import { AuthContext } from '@/src/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
+const menuItems = [
+    { name: 'Inicio', icon: 'home-outline', roles: ['admin', 'supervisor', 'usuario'], route: 'Home' },
+    { name: 'Insumos', icon: 'cube-outline', roles: ['admin', 'supervisor', 'usuario'], route: 'Insumos' },
+    { name: 'Platos', icon: 'restaurant-outline', roles: ['admin', 'supervisor', 'usuario'], route: 'Platos' },
+    { name: 'Entradas', icon: 'log-in-outline', roles: ['admin', 'supervisor', 'usuario'], route: 'Entradas' },
+    { name: 'Salidas', icon: 'exit-outline', roles: ['admin', 'supervisor', 'usuario'], route: 'Salidas' },
+    { name: 'Establecimientos', icon: 'business-outline', roles: ['admin', 'supervisor', 'usuario'], route: 'Establecimientos' },
+    { name: 'Usuarios', icon: 'person-outline', roles: ['admin'], route: 'Usuarios' },
+    { name: 'Proveedores', icon: 'people-outline', roles: ['admin'], route: 'Proveedores' },
+    { name: 'Reportes', icon: 'bar-chart-outline', roles: ['admin', 'supervisor'], route: 'Reportes' },
+];
+
 const CustomDrawerContent = (props) => {
     const { user, logout } = useContext(AuthContext);
+
+    // ✅ Filtrar menús según rol
+    const filteredMenu = menuItems.filter(item => item.roles.includes(user?.rol || ''));
 
     return (
         <DrawerContentScrollView {...props} contentContainerStyle={styles.container}>
@@ -15,62 +30,17 @@ const CustomDrawerContent = (props) => {
                 <Text style={styles.role}>{user?.rol || 'Sin rol'}</Text>
             </View>
 
-            {/* Menú de navegación con scroll */}
+            {/* ✅ Menú dinámico */}
             <View style={styles.menu}>
-                <DrawerItem
-                    label="Inicio"
-                    onPress={() => props.navigation.navigate('Home')}
-                    icon={() => <Ionicons name="home-outline" size={20} color="#333" />}
-                    labelStyle={styles.label}
-                />
-                <DrawerItem
-                    label="Insumos"
-                    onPress={() => props.navigation.navigate('Insumos')}
-                    icon={() => <Ionicons name="cube-outline" size={20} color="#333" />}
-                    labelStyle={styles.label}
-                />
-                <DrawerItem
-                    label="Platos"
-                    onPress={() => props.navigation.navigate('Platos')}
-                    icon={() => <Ionicons name="restaurant-outline" size={20} color="#333" />}
-                    labelStyle={styles.label}
-                />
-                <DrawerItem
-                    label="Establecimientos"
-                    onPress={() => props.navigation.navigate('Establecimientos')}
-                    icon={() => <Ionicons name="business-outline" size={20} color="#333" />}
-                    labelStyle={styles.label}
-                />
-                <DrawerItem
-                    label="Salidas"
-                    onPress={() => props.navigation.navigate('Salidas')}
-                    icon={() => <Ionicons name="exit-outline" size={20} color="#333" />}
-                    labelStyle={styles.label}
-                />
-                <DrawerItem
-                    label="Entradas"
-                    onPress={() => props.navigation.navigate('Entradas')}
-                    icon={() => <Ionicons name="log-in-outline" size={20} color="#333" />}
-                    labelStyle={styles.label}
-                />
-                <DrawerItem
-                    label="Proveedores"
-                    onPress={() => props.navigation.navigate('Proveedores')}
-                    icon={() => <Ionicons name="people-outline" size={20} color="#333" />}
-                    labelStyle={styles.label}
-                />
-                <DrawerItem
-                    label="Usuarios"
-                    onPress={() => props.navigation.navigate('Usuarios')}
-                    icon={() => <Ionicons name="person-outline" size={20} color="#333" />}
-                    labelStyle={styles.label}
-                />
-                <DrawerItem
-                    label="Reportes"
-                    onPress={() => props.navigation.navigate('Reportes')}
-                    icon={() => <Ionicons name="bar-chart-outline" size={20} color="#333" />}
-                    labelStyle={styles.label}
-                />
+                {filteredMenu.map(item => (
+                    <DrawerItem
+                        key={item.route}
+                        label={item.name}
+                        onPress={() => props.navigation.navigate(item.route)}
+                        icon={() => <Ionicons name={item.icon} size={20} color="#333" />}
+                        labelStyle={styles.label}
+                    />
+                ))}
             </View>
 
             {/* Botón de cerrar sesión */}

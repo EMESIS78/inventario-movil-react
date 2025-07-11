@@ -87,6 +87,7 @@ const Platos = () => {
             <TextInput
                 style={styles.searchInput}
                 placeholder="Buscar plato..."
+                placeholderTextColor="#000000"
                 value={search}
                 onChangeText={setSearch}
             />
