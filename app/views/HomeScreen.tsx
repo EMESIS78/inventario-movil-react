@@ -61,9 +61,15 @@ const HomeScreen = () => {
       setNotifications((prev) => [...prev, data]);
     });
 
+    socket.on('ajuste-stock', (data) => {
+      console.log('📦 Notificación de ajuste:', data);
+      setNotifications((prev) => [...prev, data]);
+    });
+
     return () => {
       socket.off('salida-registrada');
       socket.off('entrada-registrada');
+      socket.off('ajuste-stock');
     };
   }, []);
 
