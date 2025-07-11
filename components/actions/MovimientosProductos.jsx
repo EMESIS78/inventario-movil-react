@@ -7,11 +7,31 @@ import { AuthContext } from '../../src/AuthContext';
 const MovimientosProductos = ({ idProducto, onClose }) => {
     const auth = useContext(AuthContext);
     const [movimientos, setMovimientos] = useState([]);
+    const [almacenes, setAlmacenes] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-    obtenerMovimientos();
-}, [idProducto]);
+        obtenerMovimientos();
+        fetchAlmacenes();
+    }, [idProducto]);
+
+    const fetchAlmacenes = async () => {
+        try {
+            const response = await axios.get(`${API_URL}/almacenes`, {
+                headers: { Authorization: `Bearer ${auth?.token ?? ''}` },
+            });
+
+            const almacenesRaw = response.data?.data ?? response.data;
+            const data = almacenesRaw.map((alm) => ({
+                id: alm.id,
+                nombre: alm.nombre,
+            }));
+
+            setAlmacenes(data);
+        } catch (error) {
+            console.error('❌ Error al cargar almacenes:', error);
+        }
+    };
 
     const obtenerMovimientos = async () => {
         try {
@@ -19,12 +39,28 @@ const MovimientosProductos = ({ idProducto, onClose }) => {
                 params: { p_id_articulo: idProducto },
                 headers: { Authorization: `Bearer ${auth.token}` },
             });
-            setMovimientos(response.data.movimientos);
+
+            let movimientosData = response.data.movimientos;
+
+            // ✅ Filtrar movimientos si no es admin
+            if (auth.user?.rol !== 'admin') {
+                movimientosData = movimientosData.filter(
+                    (mov) => mov.id_almacen === auth.user?.almacen_id
+                );
+            }
+
+            setMovimientos(movimientosData);
         } catch (error) {
             console.error('❌ Error al obtener movimientos:', error);
         } finally {
             setLoading(false);
         }
+    };
+
+    // Función para obtener el nombre del almacén
+    const getNombreAlmacen = (idAlmacen) => {
+        const almacen = almacenes.find((a) => a.id === idAlmacen);
+        return almacen ? almacen.nombre : 'N/A';
     };
 
     return (
@@ -42,7 +78,7 @@ const MovimientosProductos = ({ idProducto, onClose }) => {
                         <View style={styles.card}>
                             <Text style={styles.tipo}>{item.tipo}</Text>
                             <Text>ID Movimiento: {item.id_movimiento}</Text>
-                            <Text>Almacén: {item.id_almacen ?? 'N/A'}</Text>
+                            <Text>Almacén: {getNombreAlmacen(item.id_almacen)}</Text>
                             <Text>Cantidad: {item.cantidad}</Text>
                             <Text>Fecha: {new Date(item.created_at).toLocaleString()}</Text>
                         </View>
