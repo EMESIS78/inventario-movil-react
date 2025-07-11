@@ -118,43 +118,6 @@ const Salidas = ({ navigation }: any) => {
 
             {filteredSalidas.length === 0 ? (
                 <Text style={styles.noDataText}>No hay salidas registradas.</Text>
-            ) : isLandscape ? (
-                // Vista Horizontal - Tabla
-                <ScrollView style={styles.scrollContainer}>
-                    <View style={styles.tableContainer}>
-                        <View style={styles.tableHeader}>
-                            <Text style={styles.tableHeaderText}>#</Text>
-                            <Text style={styles.tableHeaderText}>Almacén</Text>
-                            <Text style={styles.tableHeaderText}>Motivo</Text>
-                            <Text style={styles.tableHeaderText}>Usuario</Text>
-                            <Text style={styles.tableHeaderText}>Fecha</Text>
-                            <Text style={styles.tableHeaderText}>Acciones</Text>
-                        </View>
-                        {filteredSalidas.map((item) => (
-                            <View key={item.id_salida} style={styles.tableRow}>
-                                <Text style={styles.tableCell}>{item.id_salida}</Text>
-                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
-                                    {item.motivo}
-                                </Text>
-                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
-                                    {item.almacen}
-                                </Text>
-                                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
-                                    {item.usuario}
-                                </Text>
-                                <Text style={styles.tableCell}>
-                                    {new Date(item.created_at).toLocaleDateString()}
-                                </Text>
-                                <TouchableOpacity
-                                    style={styles.blueButton}
-                                    onPress={() => setDetalleDocumento(item.id_salida.toString())}
-                                >
-                                    <Text style={styles.buttonText}>Ver Detalles</Text>
-                                </TouchableOpacity>
-                            </View>
-                        ))}
-                    </View>
-                </ScrollView>
             ) : (
 
                 <FlatList

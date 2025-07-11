@@ -110,6 +110,7 @@ const Entradas = ({ navigation }: any) => {
       <TextInput
         style={styles.searchBar}
         placeholder="Buscar por documento o almacen"
+        placeholderTextColor="#888"
         value={search}
         onChangeText={setSearch}
       />
@@ -129,43 +130,6 @@ const Entradas = ({ navigation }: any) => {
 
       {filteredEntradas.length === 0 ? (
         <Text style={styles.noDataText}>No se encontraron entradas</Text>
-      ) : isLandscape ? (
-        <ScrollView style={styles.scrollContainer}>
-          <View style={styles.tableContainer}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.tableHeaderText}>#</Text>
-              <Text style={styles.tableHeaderText}>Documento</Text>
-              <Text style={styles.tableHeaderText}>Almacen</Text>
-              <Text style={styles.tableHeaderText}>Usuario</Text>
-              <Text style={styles.tableHeaderText}>Fecha</Text>
-              <Text style={styles.tableHeaderText}>Acciones</Text>
-            </View>
-
-            {filteredEntradas.map((item) => (
-              <View key={item.id_entrada} style={styles.tableRow}>
-                <Text style={styles.tableCell}>{item.id_entrada}</Text>
-                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
-                  {item.documento}
-                </Text>
-                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
-                  {item.almacen}
-                </Text>
-                <Text style={styles.tableCell} numberOfLines={1} ellipsizeMode="tail">
-                  {item.usuario}
-                </Text>
-                <Text style={styles.tableCell}>
-                  {new Date(item.created_at).toLocaleDateString()}
-                </Text>
-                <TouchableOpacity
-                  style={styles.blueButton}
-                  onPress={() => setDetalleDocumento(item.documento)}
-                >
-                  <Text style={styles.buttonText}>Ver Detalles</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        </ScrollView>
       ) : (
         <FlatList
           data={filteredEntradas}
