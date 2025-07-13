@@ -14,5 +14,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "app/App.js" 
-, "components/views/Insumos/Productos.jsx"  ]
+, "components/views/Insumos/Productos.jsx", "components/views/Platos/Platos.jsx", "components/views/Entradas/Entradas.jsx"  ]
 }
