@@ -14,5 +14,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts",
     "app/App.js" 
-, "components/views/Insumos/Productos.jsx", "components/views/Platos/Platos.jsx", "components/views/Entradas/Entradas.jsx"  ]
+, "components/views/Insumos/Productos.jsx", "components/views/Platos/Platos.jsx", "components/views/Entradas/Entradas.jsx", "components/views/Salidas/Salidas.jsx", "components/views/Reportes/Reportes.jsx", "components/views/Usuarios/Usuarios.jsx", "components/views/Almacenes/Almacenes.jsx", "components/views/Proveedores/Proveedores.jsx", "app/views/HomeScreen/HomeScreen.jsx", "app/views/Loading/LoadingApp.jsx", "app/views/Login/LoginScreen.jsx"  ]
 }

@@ -1,25 +1,19 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import {
-  View,
+  Alert,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
-  Alert,
-  Image,
-  useColorScheme
+  useColorScheme,
+  View
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { AuthContext } from '../../src/AuthContext';
-import { StackNavigationProp } from '@react-navigation/stack'; // Asegúrate que la ruta sea correcta
-
-type RootStackParamList = {
-  Login: undefined;
-  Home: undefined;
-};
+import { AuthContext } from '../../../src/AuthContext';
 
 const LoginScreen = () => {
-  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation();
   const auth = useContext(AuthContext);
   const scheme = useColorScheme();
 
@@ -33,8 +27,8 @@ const LoginScreen = () => {
   const inputBorder = scheme === 'dark' ? '#444' : '#ccc';
   const buttonColor = '#2563eb';
   const logo = scheme === 'dark'
-        ? require('../../assets/images/logo4.png') // Asegúrate de que la ruta sea correcta
-        : require('../../assets/images/logo3copy.png');
+    ? require('../../../assets/images/logo4.png')
+    : require('../../../assets/images/logo3copy.png');
 
   const handleLogin = async () => {
     if (!email || !password) {
