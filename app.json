@@ -18,7 +18,9 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.fabrixcio1107.inventariomovil",
-      "permissions": ["CAMERA"]
+      "permissions": [
+        "CAMERA"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -36,7 +38,12 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-camera"
+      [
+        "react-native-vision-camera",
+        {
+          "cameraPermissionText": "Necesitamos usar tu cámara para escanear códigos"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

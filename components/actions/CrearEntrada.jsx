@@ -5,7 +5,7 @@ import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
 import Alert from '../customs/Alert';
 import CustomDropdown from '../customs/CustomDropdown';
-import BarcodeModal from '../extras/BarcodeModal';
+import LiveBarcodeScanner from '../extras/LiveBarcodeScanner';
 
 const CrearEntrada = ({ visible, onClose, onSuccess }) => {
     const auth = useContext(AuthContext);
@@ -279,7 +279,7 @@ const CrearEntrada = ({ visible, onClose, onSuccess }) => {
                     message={alertMessage}
                     onClose={closeAlert} />
             </View>
-            <BarcodeModal
+            <LiveBarcodeScanner
                 visible={scannerVisible}
                 onClose={() => setScannerVisible(false)}
                 onScanned={(codigo) => setProductoTemp(prev => ({ ...prev, codigo }))}
