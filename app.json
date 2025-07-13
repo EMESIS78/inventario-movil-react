@@ -17,7 +17,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.fabrixcio1107.inventariomovil"
+      "package": "com.fabrixcio1107.inventariomovil",
+      "permissions": ["CAMERA"]
     },
     "web": {
       "bundler": "metro",
@@ -34,7 +35,9 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-camera",
+      "expo-barcode-scanner"
     ],
     "experiments": {
       "typedRoutes": true

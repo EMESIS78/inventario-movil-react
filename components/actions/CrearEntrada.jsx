@@ -5,6 +5,7 @@ import { API_URL } from '@env';
 import { AuthContext } from '../../src/AuthContext';
 import Alert from '../customs/Alert';
 import CustomDropdown from '../customs/CustomDropdown';
+import BarcodeModal from '../extras/BarcodeModal';
 
 const CrearEntrada = ({ visible, onClose, onSuccess }) => {
     const auth = useContext(AuthContext);
@@ -18,6 +19,8 @@ const CrearEntrada = ({ visible, onClose, onSuccess }) => {
     const [alertTitle, setAlertTitle] = useState('');
     const [alertMessage, setAlertMessage] = useState('');
     const [wasSuccessful, setWasSuccessful] = useState(false);
+
+    const [scannerVisible, setScannerVisible] = useState(false);
 
     useEffect(() => {
         const fetchAlmacenes = async () => {
@@ -224,6 +227,9 @@ const CrearEntrada = ({ visible, onClose, onSuccess }) => {
                             onBlur={() => buscarProducto(-1, 'codigo', productoTemp.codigo)}
                             style={styles.inputSmall}
                         />
+                        <TouchableOpacity onPress={() => setScannerVisible(true)} style={styles.addButton}>
+                            <Text style={styles.addButtonText}>📷 Escanear código</Text>
+                        </TouchableOpacity>
                         <TextInput
                             placeholder="Cantidad"
                             value={productoTemp.cantidad}
@@ -273,6 +279,11 @@ const CrearEntrada = ({ visible, onClose, onSuccess }) => {
                     message={alertMessage}
                     onClose={closeAlert} />
             </View>
+            <BarcodeModal
+                visible={scannerVisible}
+                onClose={() => setScannerVisible(false)}
+                onScanned={(codigo) => setProductoTemp(prev => ({ ...prev, codigo }))}
+            />
         </Modal>
     );
 };
