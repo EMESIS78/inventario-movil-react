@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, StyleSheet, Modal, Button, Alert } from 'react-native';
+import { View, StyleSheet, Modal, Button, Text } from 'react-native';
 import { Camera, useCameraDevices, useFrameProcessor } from 'react-native-vision-camera';
+import { scanBarcodes, BarcodeFormat } from 'vision-camera-code-scanner';
 import { runOnJS } from 'react-native-reanimated';
-import { decode } from '@zxing/library';
 
 const LiveBarcodeScanner = ({ visible, onClose, onScanned }) => {
     const [hasPermission, setHasPermission] = useState(false);
     const [scanned, setScanned] = useState(false);
-    const cameraRef = useRef(null);
-
     const devices = useCameraDevices();
     const device = devices.back;
 
@@ -28,16 +26,10 @@ const LiveBarcodeScanner = ({ visible, onClose, onScanned }) => {
         'worklet';
         if (scanned) return;
 
-        try {
-            // Convert frame to image format if needed
-            const imageBuffer = frame.toArrayBuffer(); // This is an example, real conversion may differ
-            const result = decode(imageBuffer);
+        const barcodes = scanBarcodes(frame, [BarcodeFormat.ALL_FORMATS]);
 
-            if (result?.text) {
-                runOnJS(handleScanSuccess)(result.text);
-            }
-        } catch (error) {
-            // Ignore failed attempts
+        if (barcodes.length > 0) {
+            runOnJS(handleScanSuccess)(barcodes[0].rawValue);
         }
     }, [scanned]);
 
@@ -47,13 +39,21 @@ const LiveBarcodeScanner = ({ visible, onClose, onScanned }) => {
         onClose();
     };
 
-    if (!device || !hasPermission) return null;
+    if (!device || !hasPermission) {
+        return (
+            <Modal visible={visible} animationType="slide">
+                <View style={styles.container}>
+                    <Text style={{ color: '#fff' }}>Cámara no disponible o sin permiso</Text>
+                    <Button title="Cerrar" onPress={onClose} />
+                </View>
+            </Modal>
+        );
+    }
 
     return (
         <Modal visible={visible} animationType="slide">
             <View style={styles.container}>
                 <Camera
-                    ref={cameraRef}
                     style={StyleSheet.absoluteFill}
                     device={device}
                     isActive={visible && !scanned}
@@ -61,7 +61,7 @@ const LiveBarcodeScanner = ({ visible, onClose, onScanned }) => {
                     frameProcessorFps={5}
                 />
                 <View style={styles.footer}>
-                    <Button title="Cancelar" onPress={onClose} />
+                    <Button title="Cancelar" onPress={onClose} color="#fff" />
                 </View>
             </View>
         </Modal>
@@ -72,13 +72,13 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'black',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     footer: {
         position: 'absolute',
         bottom: 20,
-        left: 0,
-        right: 0,
-        alignItems: 'center',
+        alignSelf: 'center',
     },
 });
 
